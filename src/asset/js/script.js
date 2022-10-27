@@ -10,7 +10,10 @@ export default class App {
     this.container = document.querySelector(".webgl");
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(devicePixelRatio >= 2 ? 2 : 1);
+    this.renderer.physicallyCorrectLights = true;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.container.appendChild(this.renderer.domElement);
+
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
