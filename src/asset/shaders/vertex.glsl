@@ -3,8 +3,10 @@ varying vec3 vPosition;
 uniform float time;
 attribute float aRandom;
 uniform float progress;
-
-
+attribute vec3 aDiffuse;
+varying vec3 vColor;
+attribute vec3 aCenter; 
+uniform float particleScale;
 mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
     float s = sin(angle);
@@ -23,19 +25,30 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 void main() {
 
     vUv = uv;
-
-
-    
+    vColor = aDiffuse;
     vec3 pos = position;
-    // pos.x +=aRandom* sin((uv.y + uv.x+ time)*10.)*0.5;
-
- 
-    // 원래대로 돌아오게
     
+   float prog = (position.y + 1.)/2.;
+        float locprog = clamp((progress-0.8*prog)/0.2,0.,1.);
 
-    // pos += aRandom * (30.* sin(progress)) * normal  ;
-    pos += sin(progress) * aRandom * 30. * normal;
+        
+        // locprog = progress;
+        // pos = pos - aCenter;
+
+        // pos += 3.*normal * aRandom * locprog;
+
+        // pos *= (1.-locprog);
+
+        // pos += aCenter;
+
+        // pos += rotate(pos,vec3(0.,1.,1.),aRandom * locprog * 3.14 * 1.);
+    pos += sin(progress) * normal * sin(aRandom) * 30.;
+    
+       
+    
+    
+    
     vec4 mvPosition = modelViewMatrix * vec4( pos , 1.);
-    gl_PointSize = 10. * (1. / - mvPosition.z);
+    gl_PointSize = 15. * (1. / - mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
 }

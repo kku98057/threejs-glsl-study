@@ -1,54 +1,46 @@
-1. 패키지 설치
-터미널에 아래 점선 사이의 내용을 붙여 넣고 엔터를 누르세요.
-----------
-npm i -D @babel/cli @babel/core @babel/preset-env babel-loader clean-webpack-plugin copy-webpack-plugin core-js cross-env html-webpack-plugin source-map-loader terser-webpack-plugin webpack webpack-cli webpack-dev-server
-----------
+### 2022-11-08
+#GTLF Particle
 
-2. 개발용 서버 구동
-터미널에 아래 점선 사이의 내용을 붙여 넣고 엔터를 누르세요.
-----------
-npm start
-----------
+##1.GLTF Model 로드
 
-3. 빌드(배포용 파일 생성)
-터미널에 아래 점선 사이의 내용을 붙여 넣고 엔터를 누르세요.
-----------
-npm run build
-----------
+ 1. GLTF Texture Model(이하 모델)을 그냥 쓰기에는 용량이 크기때문에 DracoLoader로 인코딩 해준다.
+ 2. DracoLoader로 인코딩 후 다시 GLTFLoader로 로드시켜준다.
 
-(!)
-npm start 또는 npm run build 실행 시 에러가 난다면 Node.js를 LTS 버전(장기 지원 버전)으로 설치 후 다시 시도해 보세요.
-터미널에 아래 점선 사이의 내용을 붙여 넣고 엔터를 누르면 설치할 수 있어요.
-----------
-n lts
-----------
+##2.모델의 Geometry 좌표값 구하기
+1. 모델을 구성하는 자식요소중 Mesh만 따로 빼내어 Geometry를 이루고 있는 각각의 Vetex점들의 좌표값을 구해낸다.
+2. 좌표들을 구해서 새롭게 생성한 배열에 넣어준다.
+```javascript
+//좌표는 x,y,z의 세개의 값이 있으므로 3의 배수로 증가시켜준다. 
+for(let i < 0; i < 좌표의배열.length; i+=3){
+ 좌표의배열[i] += 좌표의배열[i+1];
+ 좌표의배열[i] += 좌표의배열[i+2];
+ 좌표의배열[i] += 좌표의배열[i+3];
+}
+```
+3. 구해온 좌표값들을 Geometry의 attribute로 재정의해준다.
+```javascript
 
-(!)
-ERROR in unable to locate '경로...'
-위와 같은 에러가 발생한다면, webpack.config.js의 CopyWebpackPlugin에 설정된 파일이 있는지 확인해주세요.
-CSS나 이미지 폴더 등이 필요하지 않다면 webpack.config.js에서 CopyWebpackPlugin 부분 전체를 주석 처리 해주세요.
+this.geo.setAttribute("position",new THREE.Float32BufferAttribute(좌표배열,3));
 
-/////////webpack rule에 추가//////////
-++파일로더
-npm i file-loader -D
-{
-  test: /\.(png|jpe?g|gif|svg|webp)$/i,
-  use: {
-    loader: 'file-loader',
-    options: {
-      name: '[name].[contenthash].[ext]',
-    },
-  },
-},
+```
 
-++glsl
-npm i threejs-glsl-loader
-npm install --save-dev webpack-glsl-loader
-{
-    test: /\.(glsl|vert|frag)$/,
-     loader: "threejs-glsl-loader",
-    // Default values (can be omitted)
-},
+###2-1.Shader Material
+-기본적으로 Shader Material이아닌 PointsMaterial을 사용해도 파티클형태의 모델을 생성 할 수 있다.
+-하지만 파티클 하나하나의 세부적인 조절은 불가능해보이므로 Shader Material을 이용한다.
+-Shader Material이용하기 위해 glsl이라는 고급 그래픽셰이딩 언어를 사용한다.
 
-//선택사항 gui
-npm install dat.gui --save-dev
+
+
+###2-2 Point Mesh
+1.만들어놓은 Geometry와 material을 이용하여 mesh를 생성해준다.
+```javascript
+this.point = new THREE.Points(this.geo,this.material);
+this.scene.add(this.point);
+```
+
+
+
+###2022-11-09
+#모델의 색상 입히기
+
+ 
