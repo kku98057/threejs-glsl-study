@@ -7,6 +7,8 @@ attribute vec3 aDiffuse;
 varying vec3 vColor;
 attribute vec3 aCenter; 
 uniform float particleScale;
+uniform float dotScale;
+
 mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
     float s = sin(angle);
@@ -44,11 +46,9 @@ void main() {
         // pos += rotate(pos,vec3(0.,1.,1.),aRandom * locprog * 3.14 * 1.);
     pos += sin(progress) * normal * sin(aRandom) * 30.;
     
-       
-    
-    
-    
+
     vec4 mvPosition = modelViewMatrix * vec4( pos , 1.);
-    gl_PointSize = 15. * (1. / - mvPosition.z);
+    
+    gl_PointSize = dotScale * (1. / - mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
 }

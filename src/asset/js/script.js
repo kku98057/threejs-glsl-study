@@ -55,6 +55,7 @@ export default class App {
       bloomThreshold: 0,
       bloomRadius: 0,
     };
+
     this.bloomPass.threshold = this.params.bloomThreshold;
     this.bloomPass.strength = this.params.bloomStrength;
     this.bloomPass.radius = this.params.bloomRadius;
@@ -69,7 +70,7 @@ export default class App {
     // this.camera.position.set(10, 3, 15);
     this.time = 0;
     this.scene.add(this.camera);
-    // new OrbitControls(this.camera, this.renderer.domElement);
+    new OrbitControls(this.camera, this.renderer.domElement);
     this.addMesh();
     this.settings();
     this.setLight();
@@ -91,6 +92,7 @@ export default class App {
         bloomRadius: 0,
       },
       particleScale: 1,
+      dotScale: 1,
     };
     this.gui = new dat.GUI();
 
@@ -104,6 +106,8 @@ export default class App {
     this.gui.add(this.settings.params, "bloomThreshold", 0, 5, 0.1);
     this.gui.add(this.settings.params, "bloomRadius", 0, 5, 0.1);
     this.gui.add(this.settings, "particleScale", 1, 100, 1);
+
+    this.gui.add(this.settings, "dotScale", 1, 100, 1);
   }
   setLight() {
     this.color = 0xffffff;
@@ -117,7 +121,7 @@ export default class App {
     this.gui.add(this.light.position, "z", -10, 10, 0.01);
   }
   addMesh() {
-    // this.geo = new THREE.PlaneGeometry(3, 3, 10, 10);
+    this.geometry = new THREE.BufferGeometry();
     this.modelData = [
       {
         src: earth,
@@ -154,9 +158,7 @@ export default class App {
     );
     this.loader.load(this.modelData[0].src, (gltf) => {
       this.color = new THREE.Color();
-
       this.objs = [];
-
       let gltfObjs = this.objs;
 
       this.vector = new THREE.Vector3();
@@ -180,74 +182,146 @@ export default class App {
           this.randoms[i + 1] = r;
           this.randoms[i + 2] = r;
 
-          this.vetice[i] = this.geoArray[i];
+          // this.vetice[i] = Math.sin(this.geoArray[i]);
           this.modelData[0].vertice.push(
             this.vector.x,
             this.vector.y,
             this.vector.z
           );
 
-          this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
-          this.color.toArray(this.colors, i * 3);
+          // this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
+          // this.color.toArray(this.colors, i * 3);
 
-          let x = this.geo.attributes.position.array[i * 3];
-          let y = this.geo.attributes.position.array[i * 3 + 1];
-          let z = this.geo.attributes.position.array[i * 3 + 2];
+          // let x = this.geo.attributes.position.array[i * 3];
+          // let y = this.geo.attributes.position.array[i * 3 + 1];
+          // let z = this.geo.attributes.position.array[i * 3 + 2];
 
-          let x1 = this.geo.attributes.position.array[i * 3 + 3];
-          let y1 = this.geo.attributes.position.array[i * 3 + 4];
-          let z1 = this.geo.attributes.position.array[i * 3 + 5];
+          // let x1 = this.geo.attributes.position.array[i * 3 + 3];
+          // let y1 = this.geo.attributes.position.array[i * 3 + 4];
+          // let z1 = this.geo.attributes.position.array[i * 3 + 5];
 
-          let x2 = this.geo.attributes.position.array[i * 3 + 6];
-          let y2 = this.geo.attributes.position.array[i * 3 + 7];
-          let z2 = this.geo.attributes.position.array[i * 3 + 8];
+          // let x2 = this.geo.attributes.position.array[i * 3 + 6];
+          // let y2 = this.geo.attributes.position.array[i * 3 + 7];
+          // let z2 = this.geo.attributes.position.array[i * 3 + 8];
 
-          let center = new THREE.Vector3(x, y, z)
-            .add(new THREE.Vector3(x1, y1, z1))
-            .add(new THREE.Vector3(x2, y2, z2))
-            .divideScalar(3);
-          this.centers.set([center.x, center.y, center.z], i * 3);
-          this.centers.set([center.x, center.y, center.z], (i + 1) * 3);
-          this.centers.set([center.x, center.y, center.z], (i + 2) * 3);
+          // let center = new THREE.Vector3(x, y, z)
+          //   .add(new THREE.Vector3(x1, y1, z1))
+          //   .add(new THREE.Vector3(x2, y2, z2))
+          //   .divideScalar(3);
+          // this.centers.set([center.x, center.y, center.z], i * 3);
+          // this.centers.set([center.x, center.y, center.z], (i + 1) * 3);
+          // this.centers.set([center.x, center.y, center.z], (i + 2) * 3);
         }
 
-        obj.geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(this.vetice, 3)
-        );
-        obj.geometry.setAttribute(
-          "aRandom",
-          new THREE.Float32BufferAttribute(this.randoms, 1)
-        );
-        obj.geometry.setAttribute(
-          "aDiffuse",
-          new THREE.Float32BufferAttribute(this.colors, 3)
-        );
-        obj.geometry.setAttribute(
-          "aCenter",
-          new THREE.BufferAttribute(this.centers, 3)
-        );
-        this.points = new THREE.Points(obj.geometry, this.material);
+        // obj.geometry.setAttribute(
+        //   "position",
+        //   new THREE.Float32BufferAttribute(this.vetice, 3)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aRandom",
+        //   new THREE.Float32BufferAttribute(this.randoms, 1)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aDiffuse",
+        //   new THREE.Float32BufferAttribute(this.colors, 3)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aCenter",
+        //   new THREE.BufferAttribute(this.centers, 3)
+        // );
+        // this.points = new THREE.Points(obj.geometry, this.material);
 
-        this.scene.add(this.points);
-        this.points.position.set(0, 0, 0);
-        this.points.rotation.set(4.7, 0, 0);
+        // this.scene.add(this.points);
+        // this.points.position.set(0, 0, 0);
+        // this.points.rotation.set(4.7, 0, 0);
       });
-      const tl = gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: ".section2",
-            scrub: 3,
-            pin: true,
-            end: "+=3000",
-          },
-        })
-        .to(this.material.uniforms.progress, {
-          value: 1,
-          ease: "none",
-        });
+    });
+    this.loader.load(this.modelData[1].src, (gltf) => {
+      this.color = new THREE.Color();
+      this.objs = [];
+      let gltfObjs = this.objs;
+
+      this.vector = new THREE.Vector3();
+      gltf.scene.traverse((obj) => {
+        if (obj.isMesh) {
+          this.objs.push(obj);
+        }
+      });
+      this.objs.forEach((obj) => {
+        this.geo = new THREE.BufferGeometry();
+        this.geoPosition = obj.geometry.attributes.position;
+        this.geoArray = this.geoPosition.array;
+        this.vetice = new Float32Array(this.geoArray);
+        this.colors = new Float32Array(this.geoArray);
+        this.randoms = new Float32Array(this.geoArray);
+        this.centers = new Float32Array(this.geoArray.length * 3);
+
+        for (let i = 0; i < this.geoArray.count; i += 3) {
+          let r = Math.random();
+          this.randoms[i] = r;
+          this.randoms[i + 1] = r;
+          this.randoms[i + 2] = r;
+
+          // this.vetice[i] = Math.sin(this.geoArray[i]);
+          this.modelData[0].vertice.push(
+            this.vector.x,
+            this.vector.y,
+            this.vector.z
+          );
+
+          // this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
+          // this.color.toArray(this.colors, i * 3);
+
+          // let x = this.geo.attributes.position.array[i * 3];
+          // let y = this.geo.attributes.position.array[i * 3 + 1];
+          // let z = this.geo.attributes.position.array[i * 3 + 2];
+
+          // let x1 = this.geo.attributes.position.array[i * 3 + 3];
+          // let y1 = this.geo.attributes.position.array[i * 3 + 4];
+          // let z1 = this.geo.attributes.position.array[i * 3 + 5];
+
+          // let x2 = this.geo.attributes.position.array[i * 3 + 6];
+          // let y2 = this.geo.attributes.position.array[i * 3 + 7];
+          // let z2 = this.geo.attributes.position.array[i * 3 + 8];
+
+          // let center = new THREE.Vector3(x, y, z)
+          //   .add(new THREE.Vector3(x1, y1, z1))
+          //   .add(new THREE.Vector3(x2, y2, z2))
+          //   .divideScalar(3);
+          // this.centers.set([center.x, center.y, center.z], i * 3);
+          // this.centers.set([center.x, center.y, center.z], (i + 1) * 3);
+          // this.centers.set([center.x, center.y, center.z], (i + 2) * 3);
+        }
+
+        // obj.geometry.setAttribute(
+        //   "position",
+        //   new THREE.Float32BufferAttribute(this.vetice, 3)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aRandom",
+        //   new THREE.Float32BufferAttribute(this.randoms, 1)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aDiffuse",
+        //   new THREE.Float32BufferAttribute(this.colors, 3)
+        // );
+        // obj.geometry.setAttribute(
+        //   "aCenter",
+        //   new THREE.BufferAttribute(this.centers, 3)
+        // );
+        // this.points = new THREE.Points(obj.geometry, this.material);
+
+        // this.scene.add(this.points);
+        // this.points.position.set(0, 0, 0);
+        // this.points.rotation.set(4.7, 0, 0);
+      });
     });
 
+    this.geometry.morphAttributes.position = [];
+    this.geometry.morphAttributes.position[0] =
+      new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3);
+    this.geometry.morphAttributes.position[0] =
+      new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3);
     this.material = new THREE.ShaderMaterial({
       transparent: true,
       uniforms: {
@@ -274,6 +348,7 @@ export default class App {
           type: "f",
           value: 0,
         },
+        dotScale: { type: "f", value: 1 },
         color: { value: new THREE.Color(0xffffff) },
         alphaTest: { value: 0.1 },
       },
@@ -282,6 +357,10 @@ export default class App {
       vertexShader: vertex,
       side: THREE.DoubleSide,
     });
+
+    this.mesh = new THREE.Points(this.geometry, this.material);
+    console.log(this.mesh);
+    this.scene.add(this.mesh);
   }
 
   setResize() {
@@ -307,6 +386,8 @@ export default class App {
       this.material.uniforms.particleScale.value;
     this.material.uniforms.progress.value =
       this.material.uniforms.progress.value;
+
+    this.material.uniforms.dotScale.value = this.settings.dotScale;
   }
   render() {
     // this.renderer.render(this.scene, this.camera);
