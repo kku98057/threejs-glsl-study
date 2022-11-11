@@ -32,12 +32,12 @@ this.geo.setAttribute(
 
 ### 2-1.Shader Material
 
--기본적으로 Shader Material이아닌 PointsMaterial을 사용해도 파티클형태의 모델을 생성 할 수 있다. -하지만 파티클 하나하나의 세부적인 조절은 불가능해보이므로 Shader Material을 이용한다.
--Shader Material이용하기 위해 glsl이라는 고급 그래픽셰이딩 언어를 사용한다.
+- 기본적으로 Shader Material이아닌 PointsMaterial을 사용해도 파티클형태의 모델을 생성 할 수 있다. -하지만 파티클 하나하나의 세부적인 조절은 불가능해보이므로 Shader Material을 이용한다.
+  -Shader Material이용하기 위해 glsl이라는 고급 그래픽셰이딩 언어를 사용한다.
 
 ### 2-2 Point Mesh
 
-1.만들어놓은 Geometry와 material을 이용하여 mesh를 생성해준다.
+1. 만들어놓은 Geometry와 material을 이용하여 mesh를 생성해준다.
 
 ```javascript
 this.point = new THREE.Points(this.geo, this.material);
@@ -57,5 +57,59 @@ this.scene.add(this.point);
 # 2022-11-11
 
 # Morph Target Change
+
+1. 저장해놓은 모델의 좌표값을 geometry의 morphAttribute에 저장한다.
+
+```javascript
+this.geo.morphAttribute.position = [];
+this.geo.morphAttribute.position[0] = new THREE.Float32BufferAttribute(
+  저장한좌표배열,
+  3
+);
+```
+
+2. morphTargetInfluences메서드를 이용해서 0~1사이의 값을 변경 시켜주면 우리가 저장해놓은 좌표값으로 움직인다.
+
+```javascript
+//아래의 gif코드중 일부
+const tl = gsap
+  .timeline({
+    scrollTrigger: ".section1",
+    pin: true,
+    scrub: 3,
+    end: "+=3000",
+  })
+  .to(this.mesh.morphTargetInfluences, [0, 1]);
+
+const tl2 = gsap
+  .timeline({
+    scrollTrigger: ".section2",
+    pin: true,
+    scrub: 3,
+    end: "+=3000",
+  })
+  .to(this.mesh.morphTargetInfluences, [0, 0]);
+
+// 여기서 카메라 시점까지 변경해준다면 ?
+const tl = gsap
+  .timeline({
+    scrollTrigger: ".section1",
+    pin: true,
+    scrub: 3,
+    end: "+=3000",
+  })
+  .to(this.camera.position, { x: 5 })
+  .to(this.mesh.morphTargetInfluences, [0, 1]);
+
+const tl2 = gsap
+  .timeline({
+    scrollTrigger: ".section2",
+    pin: true,
+    scrub: 3,
+    end: "+=3000",
+  })
+  .to(this.camera.position, { x: 0 })
+  .to(this.mesh.morphTargetInfluences, [0, 0]);
+```
 
 <img width="80%" src="https://user-images.githubusercontent.com/52364652/201297706-5dd08f8c-e71c-4cbf-8888-ab05be5821e8.gif"/>
