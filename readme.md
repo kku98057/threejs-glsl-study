@@ -117,3 +117,5 @@ const tl2 = gsap
 ```
 
 <img width="80%" src="https://user-images.githubusercontent.com/52364652/201297706-5dd08f8c-e71c-4cbf-8888-ab05be5821e8.gif"/>
+
+- gltf로 모델을 로드했을때는 왜 적용이 안되는지 파악중이다.....
