@@ -5,7 +5,7 @@ attribute float aRandom;
 uniform float progress;
 attribute vec3 aDiffuse;
 varying vec3 vColor;
-attribute vec3 aCenter; 
+// attribute vec3 aCenter; 
 uniform float particleScale;
 uniform float dotScale;
 
@@ -49,6 +49,6 @@ void main() {
 
     vec4 mvPosition = modelViewMatrix * vec4( pos , 1.);
     
-    gl_PointSize = dotScale * (1. / - mvPosition.z);
+    gl_PointSize = 30. * (1. / - mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
 }

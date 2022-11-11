@@ -13,7 +13,7 @@ import land from "../3DTexture/land.glb";
 import rocket from "../3DTexture/rocket.glb";
 import logo from "../3DTexture/logo.glb";
 import t1Texture from "../img/circle.png";
-import gsap from "gsap";
+import gsap, { snap } from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import * as dat from "dat.gui";
 
@@ -21,6 +21,11 @@ import * as dat from "dat.gui";
 export default class App {
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
+    this.delay = (time, value) =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve(value), time);
+      });
+
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.container = document.querySelector(".webgl");
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -37,9 +42,10 @@ export default class App {
       0.1,
       1000
     );
+
     this.clock = new THREE.Clock();
 
-    this.camera.position.set(-1, 0, 4);
+    this.camera.position.set(0, 0, 5);
 
     this.renderScene = new RenderPass(this.scene, this.camera);
 
@@ -91,6 +97,8 @@ export default class App {
         bloomThreshold: 0,
         bloomRadius: 0,
       },
+      earth: 0,
+      land: 0,
       particleScale: 1,
       dotScale: 1,
     };
@@ -108,6 +116,9 @@ export default class App {
     this.gui.add(this.settings, "particleScale", 1, 100, 1);
 
     this.gui.add(this.settings, "dotScale", 1, 100, 1);
+
+    this.gui.add(this.settings, "earth", 0, 1, 0.01);
+    this.gui.add(this.settings, "land", 0, 1, 0.01);
   }
   setLight() {
     this.color = 0xffffff;
@@ -121,28 +132,33 @@ export default class App {
     this.gui.add(this.light.position, "z", -10, 10, 0.01);
   }
   addMesh() {
-    this.geometry = new THREE.BufferGeometry();
+    this.manager = new THREE.LoadingManager();
+
     this.modelData = [
       {
-        src: earth,
         vertice: [],
+        random: [],
+        colors: new THREE.Vector3(),
       },
       {
-        src: land,
         vertice: [],
+        random: [],
+        colors: new THREE.Vector3(),
       },
       {
-        src: rocket,
         vertice: [],
+        random: [],
+        colors: new THREE.Vector3(),
       },
       {
-        src: logo,
         vertice: [],
+        random: [],
+        colors: new THREE.Vector3(),
       },
     ];
 
-    this.loader = new GLTFLoader();
-    this.loader2 = new GLTFLoader();
+    this.loader = new GLTFLoader(this.manager);
+    this.loader2 = new GLTFLoader(this.manager);
     this.loader3 = new GLTFLoader();
     this.loader4 = new GLTFLoader();
 
@@ -156,7 +172,8 @@ export default class App {
     this.draco.setDecoderPath(
       "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/js/libs/draco/"
     );
-    this.loader.load(this.modelData[0].src, (gltf) => {
+
+    this.loader.load(earth, (gltf) => {
       this.color = new THREE.Color();
       this.objs = [];
       let gltfObjs = this.objs;
@@ -168,29 +185,31 @@ export default class App {
         }
       });
       this.objs.forEach((obj) => {
-        this.geo = new THREE.BufferGeometry();
         this.geoPosition = obj.geometry.attributes.position;
         this.geoArray = this.geoPosition.array;
         this.vetice = new Float32Array(this.geoArray);
-        this.colors = new Float32Array(this.geoArray);
+        this.modelData[0].colors = new Float32Array(this.geoArray);
         this.randoms = new Float32Array(this.geoArray);
         this.centers = new Float32Array(this.geoArray.length * 3);
 
-        for (let i = 0; i < this.geoArray.count; i += 3) {
+        for (let i = 0; i < this.geoPosition.count; i += 3) {
           let r = Math.random();
           this.randoms[i] = r;
           this.randoms[i + 1] = r;
           this.randoms[i + 2] = r;
+          this.modelData[0].random.push(r);
 
-          // this.vetice[i] = Math.sin(this.geoArray[i]);
+          this.vector.x = this.geoArray[i];
+          this.vector.y = this.geoArray[i + 1];
+          this.vector.z = this.geoArray[i + 2];
           this.modelData[0].vertice.push(
             this.vector.x,
             this.vector.y,
             this.vector.z
           );
 
-          // this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
-          // this.color.toArray(this.colors, i * 3);
+          this.color.setHSL(0.01 + 0.1 * (i / this.geoPosition.count), 1, 1.0);
+          this.color.toArray(this.colors, i * 3);
 
           // let x = this.geo.attributes.position.array[i * 3];
           // let y = this.geo.attributes.position.array[i * 3 + 1];
@@ -212,31 +231,9 @@ export default class App {
           // this.centers.set([center.x, center.y, center.z], (i + 1) * 3);
           // this.centers.set([center.x, center.y, center.z], (i + 2) * 3);
         }
-
-        // obj.geometry.setAttribute(
-        //   "position",
-        //   new THREE.Float32BufferAttribute(this.vetice, 3)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aRandom",
-        //   new THREE.Float32BufferAttribute(this.randoms, 1)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aDiffuse",
-        //   new THREE.Float32BufferAttribute(this.colors, 3)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aCenter",
-        //   new THREE.BufferAttribute(this.centers, 3)
-        // );
-        // this.points = new THREE.Points(obj.geometry, this.material);
-
-        // this.scene.add(this.points);
-        // this.points.position.set(0, 0, 0);
-        // this.points.rotation.set(4.7, 0, 0);
       });
     });
-    this.loader.load(this.modelData[1].src, (gltf) => {
+    this.loader.load(land, (gltf) => {
       this.color = new THREE.Color();
       this.objs = [];
       let gltfObjs = this.objs;
@@ -248,7 +245,6 @@ export default class App {
         }
       });
       this.objs.forEach((obj) => {
-        this.geo = new THREE.BufferGeometry();
         this.geoPosition = obj.geometry.attributes.position;
         this.geoArray = this.geoPosition.array;
         this.vetice = new Float32Array(this.geoArray);
@@ -256,21 +252,24 @@ export default class App {
         this.randoms = new Float32Array(this.geoArray);
         this.centers = new Float32Array(this.geoArray.length * 3);
 
-        for (let i = 0; i < this.geoArray.count; i += 3) {
+        for (let i = 0; i < this.geoPosition.count; i += 3) {
           let r = Math.random();
           this.randoms[i] = r;
           this.randoms[i + 1] = r;
           this.randoms[i + 2] = r;
+          this.modelData[1].random.push(r);
 
-          // this.vetice[i] = Math.sin(this.geoArray[i]);
-          this.modelData[0].vertice.push(
+          this.vector.x = this.geoArray[i];
+          this.vector.y = this.geoArray[i + 1];
+          this.vector.z = this.geoArray[i + 2];
+          this.modelData[1].vertice.push(
             this.vector.x,
             this.vector.y,
             this.vector.z
           );
 
-          // this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
-          // this.color.toArray(this.colors, i * 3);
+          this.color.setHSL(0.01 + 0.1 * (i / this.geoArray.count), 1, 1.0);
+          this.color.toArray(this.colors, i * 3);
 
           // let x = this.geo.attributes.position.array[i * 3];
           // let y = this.geo.attributes.position.array[i * 3 + 1];
@@ -292,36 +291,9 @@ export default class App {
           // this.centers.set([center.x, center.y, center.z], (i + 1) * 3);
           // this.centers.set([center.x, center.y, center.z], (i + 2) * 3);
         }
-
-        // obj.geometry.setAttribute(
-        //   "position",
-        //   new THREE.Float32BufferAttribute(this.vetice, 3)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aRandom",
-        //   new THREE.Float32BufferAttribute(this.randoms, 1)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aDiffuse",
-        //   new THREE.Float32BufferAttribute(this.colors, 3)
-        // );
-        // obj.geometry.setAttribute(
-        //   "aCenter",
-        //   new THREE.BufferAttribute(this.centers, 3)
-        // );
-        // this.points = new THREE.Points(obj.geometry, this.material);
-
-        // this.scene.add(this.points);
-        // this.points.position.set(0, 0, 0);
-        // this.points.rotation.set(4.7, 0, 0);
       });
     });
-
-    this.geometry.morphAttributes.position = [];
-    this.geometry.morphAttributes.position[0] =
-      new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3);
-    this.geometry.morphAttributes.position[0] =
-      new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3);
+    this.geometry = new THREE.BufferGeometry();
     this.material = new THREE.ShaderMaterial({
       transparent: true,
       uniforms: {
@@ -357,10 +329,28 @@ export default class App {
       vertexShader: vertex,
       side: THREE.DoubleSide,
     });
+    this.manager.onLoad = () => {
+      // diffuse(컬러) 추가
+      this.geometry.setAttribute(
+        "aDiffuse",
+        new THREE.Float32BufferAttribute(this.colors, 3)
+      );
+      this.geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3)
+      );
 
-    this.mesh = new THREE.Points(this.geometry, this.material);
-    console.log(this.mesh);
-    this.scene.add(this.mesh);
+      // morph 배열생성
+      this.geometry.morphAttributes.position = [];
+      // morph포지션 속성추가
+      this.geometry.morphAttributes.position[0] =
+        new THREE.Float32BufferAttribute(this.modelData[0].vertice, 3);
+      this.geometry.morphAttributes.position[1] =
+        new THREE.Float32BufferAttribute(this.modelData[1].vertice, 3);
+      this.mesh = new THREE.Points(this.geometry, this.material);
+
+      this.scene.add(this.mesh);
+    };
   }
 
   setResize() {
@@ -387,6 +377,10 @@ export default class App {
     this.material.uniforms.progress.value =
       this.material.uniforms.progress.value;
 
+    if (this.mesh) {
+      this.mesh.morphTargetInfluences[0] = this.settings.earth;
+      this.mesh.morphTargetInfluences[1] = this.settings.land;
+    }
     this.material.uniforms.dotScale.value = this.settings.dotScale;
   }
   render() {

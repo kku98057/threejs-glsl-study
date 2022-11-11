@@ -29,4 +29,6 @@ void main(){
 
     if ( gl_FragColor.a < alphaTest ) discard;
 
+    // gl_FragColor = vec4(vUv,1.,1.);
+
 }
