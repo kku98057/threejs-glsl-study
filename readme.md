@@ -66,6 +66,10 @@ this.geo.morphAttribute.position[0] = new THREE.Float32BufferAttribute(
   저장한좌표배열,
   3
 );
+this.geo.morphAttribute.position[1] = new THREE.Float32BufferAttribute(
+  저장한좌표배열,
+  3
+);
 ```
 
 2. morphTargetInfluences메서드를 이용해서 0~1사이의 값을 변경 시켜주면 우리가 저장해놓은 좌표값으로 움직인다.
