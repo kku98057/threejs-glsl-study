@@ -197,6 +197,29 @@ export default class App {
       new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3);
     this.geometry.morphAttributes.position[2] =
       new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3);
+
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: vertex,
+      fragmentShader: fragment,
+      morphTargets: true,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthTest: false,
+      depthWrite: true,
+      uniforms: {
+        morphTargetInfluences: { value: [1.0, 0.0, 0.0, 0.0, 0.0] },
+        uColor1: { value: new THREE.Color("#006dff") },
+        uColor2: { value: new THREE.Color("#fc0001") },
+        uColor3: { value: new THREE.Color("#f2e300") },
+        uOpacity: { value: 0.5 },
+        uTime: { value: 0 },
+        uScale: { value: 0.6 },
+        uSize: { value: 0 },
+        t: { type: "f", value: new THREE.TextureLoader().load(t1Texture) },
+      },
+    });
+    this.material.morphTargets = true;
+
     this.mesh = new THREE.Points(this.geometry, this.material);
     this.scene.add(this.mesh);
 

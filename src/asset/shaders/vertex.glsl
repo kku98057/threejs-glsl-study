@@ -8,6 +8,7 @@ varying vec3 vColor;
 // attribute vec3 aCenter; 
 uniform float particleScale;
 uniform float dotScale;
+uniform float morphTargetInfluences;
 
 mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
@@ -28,6 +29,7 @@ void main() {
 
     vUv = uv;
     vColor = aDiffuse;
+    vPosition = position;
     vec3 pos = position;
     
    float prog = (position.y + 1.)/2.;
@@ -44,11 +46,13 @@ void main() {
         // pos += aCenter;
 
         // pos += rotate(pos,vec3(0.,1.,1.),aRandom * locprog * 3.14 * 1.);
-    pos += sin(progress) * normal * sin(aRandom) * 30.;
+    // pos += sin(progress) * normal * sin(aRandom) * 30.;
+    //     vec3 morphed = vec3( 0.0 );
+    //  morphed += morphTargetInfluences[0];
     
 
     vec4 mvPosition = modelViewMatrix * vec4( pos , 1.);
     
-    gl_PointSize = 30. * (1. / - mvPosition.z);
+    gl_PointSize = 15. * (1. / - mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
 }
