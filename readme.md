@@ -124,6 +124,8 @@ const tl2 = gsap
 
 # Morph Target Change-2
 
-아무래도 gltf의 모델이 로딩이 완료 된 후 좌표값의 입력이 되어야하는것 같다.
+gltf의 모델이 로딩이 완료 된 후! 좌표값의 입력이 되어야하는것 같다.
+loadingmanager로도 되지않았는데 비동기처리로 하니 된다.
+그리고 좌표값을 굳이 for문을 통해 할 필요가 없었다.
 
 <img width="80%" src="https://user-images.githubusercontent.com/52364652/201466737-08c54fc4-a1bc-4e14-af6f-57f2bcc0f70e.gif"/>
