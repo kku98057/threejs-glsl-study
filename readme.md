@@ -119,3 +119,11 @@ const tl2 = gsap
 <img width="80%" src="https://user-images.githubusercontent.com/52364652/201297706-5dd08f8c-e71c-4cbf-8888-ab05be5821e8.gif"/>
 
 - gltf로 모델을 로드했을때는 왜 적용이 안되는지 파악중이다.....
+
+# 2022-11-12
+
+# Morph Target Change-2
+
+아무래도 gltf의 모델이 로딩이 완료 된 후 좌표값의 입력이 되어야하는것 같다.
+
+<img width="80%" src="https://user-images.githubusercontent.com/52364652/201466737-08c54fc4-a1bc-4e14-af6f-57f2bcc0f70e.gif"/>
