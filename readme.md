@@ -129,3 +129,7 @@ loadingmanager로도 되지않았는데 비동기처리로 하니 된다.
 그리고 좌표값을 굳이 for문을 통해 할 필요가 없었다.
 
 <img width="80%" src="https://user-images.githubusercontent.com/52364652/201466737-08c54fc4-a1bc-4e14-af6f-57f2bcc0f70e.gif"/>
+
+# 치명적인문제점발견!!!
+
+### shaderMaterial 사용시 morph가 안된다.. glsl fragment를 건드려야한다.....
