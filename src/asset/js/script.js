@@ -45,7 +45,7 @@ export default class App {
 
     this.clock = new THREE.Clock();
 
-    this.camera.position.set(0, 0, 0);
+    this.camera.position.set(0, 0, 4);
     // this.camera.lookAt(0, 0, 0);
 
     this.renderScene = new RenderPass(this.scene, this.camera);
@@ -130,14 +130,26 @@ export default class App {
       {
         src: earth,
         vertices: [],
-      },
-      {
-        src: rocket,
-        vertices: [],
+        colors: [],
+        randoms: [],
       },
       {
         src: land,
         vertices: [],
+        colors: [],
+        randoms: [],
+      },
+      {
+        src: rocket,
+        vertices: [],
+        colors: [],
+        randoms: [],
+      },
+      {
+        src: logo,
+        vertices: [],
+        colors: [],
+        randoms: [],
       },
     ];
     this.geometry = new THREE.BufferGeometry();
@@ -151,7 +163,15 @@ export default class App {
         this.objs.forEach((model) => {
           this.position = model.geometry.attributes.position;
           this.positionArray = this.position.array;
+
           this.modelData[0].vertices = this.positionArray;
+
+          for (let i = 0; i < this.positionArray.length; i += 3) {
+            let x = Math.random() - 0.5 + this.positionArray[i],
+              y = Math.random() - 0.5 + this.positionArray[i + 1],
+              z = Math.random() - 0.5 + this.positionArray[i + 2];
+            this.modelData[0].randoms.push(x, y, z);
+          }
         });
       });
     });
@@ -165,6 +185,13 @@ export default class App {
           this.position = model.geometry.attributes.position;
           this.positionArray = this.position.array;
           this.modelData[1].vertices = this.position.array;
+
+          for (let i = 0; i < this.positionArray.length; i += 3) {
+            let x = Math.random() - 0.2 + this.positionArray[i],
+              y = Math.random() - 0.2 + this.positionArray[i + 1],
+              z = Math.random() - 0.2 + this.positionArray[i + 2];
+            this.modelData[1].randoms.push(x, y, z);
+          }
         });
       });
     });
@@ -179,64 +206,139 @@ export default class App {
           this.positionArray = this.position.array;
 
           this.modelData[2].vertices = this.position.array;
+
+          for (let i = 0; i < this.positionArray.length; i += 3) {
+            let x = Math.random() * 5 + this.positionArray[i],
+              y = Math.random() * 5 + this.positionArray[i + 1],
+              z = Math.random() * 5 + this.positionArray[i + 2];
+            this.modelData[2].randoms.push(x, y, z);
+          }
         });
       });
     });
+
     await this.delay(1000);
     this.geometry.setAttribute(
       "position",
       new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
     );
-    this.material = new THREE.PointsMaterial({
-      size: 0.01,
-    });
+    this.geometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
+    );
+    this.geometry.setAttribute(
+      "aRandom",
+      new THREE.Float32BufferAttribute(this.modelData[0].randoms, 3)
+    );
+    this.geometry.setAttribute(
+      "morphTarget1",
+      new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
+    );
+    this.geometry.setAttribute(
+      "morphTarget2",
+      new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3)
+    );
+    this.geometry.setAttribute(
+      "morphTarget3",
+      new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3)
+    );
+
     this.geometry.morphAttributes.position = [];
+    this.geometry.morphAttributes.color = [];
+    this.geometry.morphAttributes.random = [];
+
     this.geometry.morphAttributes.position[0] =
       new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3);
+
+    this.geometry.morphAttributes.color[0] = new THREE.Float32BufferAttribute(
+      this.modelData[0].vertices,
+      3
+    );
+
+    this.geometry.morphAttributes.random[0] = new THREE.Float32BufferAttribute(
+      this.modelData[0].randoms,
+      3
+    );
+
     this.geometry.morphAttributes.position[1] =
       new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3);
+
+    this.geometry.morphAttributes.color[1] = new THREE.Float32BufferAttribute(
+      this.modelData[1].vertices,
+      3
+    );
+
+    this.geometry.morphAttributes.random[0] = new THREE.Float32BufferAttribute(
+      this.modelData[1].randoms,
+      3
+    );
+
     this.geometry.morphAttributes.position[2] =
       new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3);
+
+    this.geometry.morphAttributes.color[2] = new THREE.Float32BufferAttribute(
+      this.modelData[2].vertices,
+      3
+    );
+
+    this.geometry.morphAttributes.random[0] = new THREE.Float32BufferAttribute(
+      this.modelData[2].randoms,
+      3
+    );
 
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
-      morphTargets: true,
       blending: THREE.AdditiveBlending,
       transparent: true,
       depthTest: false,
       depthWrite: true,
+
+      vertexColors: true,
       uniforms: {
-        morphTargetInfluences: { value: [1.0, 0.0, 0.0, 0.0, 0.0] },
-        uColor1: { value: new THREE.Color("#006dff") },
-        uColor2: { value: new THREE.Color("#fc0001") },
-        uColor3: { value: new THREE.Color("#f2e300") },
-        uOpacity: { value: 0.5 },
-        uTime: { value: 0 },
-        uScale: { value: 0.6 },
-        uSize: { value: 0 },
+        u_time: { type: "f", value: 1 },
+        u_morphTargetInfluences: { type: "f", value: [0, 0, 0] },
+        u_morphTarget1: { type: "f", value: [0.0, 0.0, 0.0] },
+        u_morphTarget2: { type: "f", value: [0.0, 1.0, 0.0] },
+        u_morphTarget3: { type: "f", value: [0.0, 0.0, 1.0] },
+        u_slide: { type: "f", value: 0.0 },
+        u_resolution: { type: "v2", value: new THREE.Vector2() },
+        u_opacity: { type: "v2", value: 0.5 },
         t: { type: "f", value: new THREE.TextureLoader().load(t1Texture) },
+        u_color1: { type: "v3", value: new THREE.Color("#006dff") },
+        u_color2: { type: "v3", value: new THREE.Color("#fc0001") },
+        u_color3: { type: "v3", value: new THREE.Color("#f2e300") },
       },
     });
-    this.material.morphTargets = true;
+    // this.material = new THREE.PointsMaterial({
+    //   size: 0.01 + Math.random() * 0.005,
+    //   transparent: true,
+    //   vertexColors: true,
+    //   blending: THREE.AdditiveBlending,
+    //   depthTest: false,
+    //   transparent: true,
+    //   map: new THREE.TextureLoader().load("./asset/img/circle.png"),
+    // });
 
     this.mesh = new THREE.Points(this.geometry, this.material);
+    this.mesh.updateMorphTargets();
     this.scene.add(this.mesh);
 
     await this.delay(100);
-    const tl = gsap.timeline();
-    tl.to(this.camera.position, {
-      x: 0,
-      z: 3,
-      duration: 3,
-    }).to(
-      this.mesh.rotation,
-      {
-        y: Math.PI,
-        duration: 3,
-      },
-      ">-=3"
-    );
+
+    // const tl = gsap.timeline();
+    // tl.to(this.camera.position, {
+    //   x: 0,
+    //   z: 3,
+    //   duration: 3,
+    // }).to(
+    //   this.mesh.rotation,
+    //   {
+    //     y: Math.PI,
+    //     duration: 3,
+    //   },
+    //   ">-=3"
+    // );
     const tl2 = gsap
       .timeline({
         scrollTrigger: {
@@ -244,76 +346,50 @@ export default class App {
           pin: true,
           end: "+=3000",
           scrub: 3,
+          markers: true,
         },
       })
-      .to(this.mesh.rotation, {
-        y: Math.PI * 2,
-      })
-      .to(
-        this.camera.position,
-        {
-          x: 0,
-          z: 0,
-        },
-        ">-=0.4"
-      )
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0], ">-=0.5")
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 1, 0])
-      .to(
-        this.camera.position,
-        {
-          x: 0,
-          z: 3,
-        },
-        ">-=0.5"
-      )
-      .to(
-        this.mesh.rotation,
-        {
-          y: Math.PI,
-        },
-        ">-=0.5"
-      )
-      .to(
-        {},
-        {
-          duration: 0.5,
-        }
-      );
+      .to(this.material.uniforms.u_morphTargetInfluences, {
+        value: [0, 1, 0],
+      });
 
-    const tl3 = gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: ".section3",
-          pin: true,
-          end: "+=3000",
-          scrub: 3,
-        },
-      })
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0.5])
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 0, 1])
-      .to(
-        this.mesh.rotation,
-        {
-          y: Math.PI * 3,
-          z: Math.PI * 0.5,
-        },
-        ">-=0.4"
-      )
-      .to(this.mesh.rotation, {
-        y: Math.PI * 4,
-        z: 0,
-      })
-      .to(
-        {},
-        {
-          duration: 0.5,
-        }
-      );
+    // const tl3 = gsap
+    //   .timeline({
+    //     scrollTrigger: {
+    //       trigger: ".section3",
+    //       pin: true,
+    //       end: "+=3000",
+    //       scrub: 3,
+    //       markers: true,
+    //     },
+    //   })
+    //   .to(this.mesh.rotation, {
+    //     y: Math.PI * 2,
+    //   })
+    //   .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0.5], ">-=0.5")
+    //   .to(this.mesh.morphTargetInfluences, 0.5, [0, 0, 1])
+    //   .to(
+    //     this.mesh.rotation,
+    //     {
+    //       y: Math.PI * 3,
+    //       z: Math.PI * 0.5,
+    //     },
+    //     ">-=0.4"
+    //   )
+    //   .to(this.mesh.rotation, {
+    //     y: Math.PI * 4,
+    //     z: 0,
+    //   })
+    //   .to(
+    //     {},
+    //     {
+    //       duration: 0.5,
+    //     }
+    //   );
 
-    window.addEventListener("scroll", () => {
-      console.log(this.mesh.morphTargetInfluences);
-    });
+    // window.addEventListener("scroll", () => {
+    //   console.log(this.mesh.morphTargetInfluences);
+    // });
   }
 
   setResize() {
@@ -328,6 +404,9 @@ export default class App {
   update() {
     this.time += 0.01;
     this.delta = this.clock.getDelta();
+    if (this.material) {
+      this.material.uniforms.u_time.value += Math.sin(0.05);
+    }
     // console.log(this.camera.position);
   }
   render() {

@@ -1,14 +1,14 @@
 varying vec2 vUv;
 varying vec3 vPosition;
-uniform float time;
-attribute float aRandom;
+uniform float u_time;
 uniform float progress;
-attribute vec3 aDiffuse;
-varying vec3 vColor;
-// attribute vec3 aCenter; 
-uniform float particleScale;
-uniform float dotScale;
+attribute vec3 aRandom;
+uniform float u_slide;
 uniform float morphTargetInfluences;
+attribute vec3 u_morphTarget1;
+attribute vec3 u_morphTarget2;
+attribute vec3 u_morphTarget3;
+
 
 mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
@@ -28,31 +28,35 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 void main() {
 
     vUv = uv;
-    vColor = aDiffuse;
+    
     vPosition = position;
     vec3 pos = position;
+    vec3 transformed = vec3(position);
+    float speed = 0.8;
+    float time = u_time * (speed * aRandom.x);
+
+    transformed.x += sin(aRandom.x * time) * 0.04;
+    transformed.y += cos(aRandom.y * time) * 0.04;
+    transformed.z += cos(aRandom.z * time) * 0.04;
+    // if(u_slide == 0.0){
+    //     transformed += (u_morphTarget1 - position ) * morphTargetInfluences[0.,0.,0.];
+    // }else if(u_slide == 1.0){
+    //     transformed += (u_morphTarget2 - position ) * morphTargetInfluences[0.,1.,0.];
+
+    // }else if(u_slide ==2.0){
+    //     transformed += u_morphTarget3;
+    // }
+
     
-   float prog = (position.y + 1.)/2.;
-        float locprog = clamp((progress-0.8*prog)/0.2,0.,1.);
-
-        
-        // locprog = progress;
-        // pos = pos - aCenter;
-
-        // pos += 3.*normal * aRandom * locprog;
-
-        // pos *= (1.-locprog);
-
-        // pos += aCenter;
-
-        // pos += rotate(pos,vec3(0.,1.,1.),aRandom * locprog * 3.14 * 1.);
-    // pos += sin(progress) * normal * sin(aRandom) * 30.;
-    //     vec3 morphed = vec3( 0.0 );
-    //  morphed += morphTargetInfluences[0];
+   
+ 
     
 
-    vec4 mvPosition = modelViewMatrix * vec4( pos , 1.);
+    
+
+    vec4 mvPosition = modelViewMatrix * vec4( transformed , 1.);
     
     gl_PointSize = 15. * (1. / - mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
+    
 }

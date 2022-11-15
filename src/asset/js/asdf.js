@@ -1516,6 +1516,7 @@ var JT = JT || {};
           
               float kd = max(minSize, dot(v_vertToLight, v_Normal));
               
+              
               // SizeAttenuation 
               //vec2 scale;
               //scale *= - viewPosition.z;

@@ -1,57 +1,35 @@
 
-uniform float time;
-uniform vec2 resolution;
+
+
+uniform float u_time;
+uniform vec2 u_resolution;
 varying vec2 vUv;
 varying vec3 vPosition;
 uniform float progress;
 uniform float random;
 uniform sampler2D t;
-uniform vec3 diffuse;
-varying vec3 vColor;
-uniform float alphaTest;
-uniform vec3 color;
-uniform vec3 uColor1;
-uniform vec3 uColor2;
-uniform vec3 uColor3;
-uniform float uTime;
-uniform float uOpacity;
-uniform float uScale;
-
+uniform vec3 u_color1;
+uniform vec3 u_color2;
+uniform vec3 u_color3;
+uniform float u_opacity;
+uniform float aRandom;
 
 
 void main(){
-    float speed = 2.8;
-              float time = uTime * speed;
+    vec4 t1 = texture2D(t,gl_PointCoord);
+   vec2 coord = gl_FragCoord.xy/u_resolution;
+    vec3 col  = vec3(0.);
+    vec3 transformed = vec3(vPosition);
 
-              float depth = vPosition.z * 0.1 + 0.8;
+   
 
-              vec3 transformed = vec3(vPosition);
-              float gradientDirection = (transformed.x ) * 0.05 + 0.3 ;
+   vec3 mixA = mix(u_color1,u_color2,coord.x);
+   vec3 mixB = mix(u_color2,u_color3,coord.x);
 
-              vec3 mixA = mix(uColor1, uColor2, gradientDirection );
-              vec3 mixB = mix(uColor2, uColor3, gradientDirection );
-              vec3 color = mix(mixA, mixB, step(0.2, gradientDirection));
+   col += mix(mixA,mixB,smoothstep(transformed.x * 0.1, transformed.x,transformed));
+   
 
-              float opacity = uOpacity;
-
-              opacity += sin(time) * 0.1;
-              opacity *= uScale + (sin(opacity * speed + time) * (1.0 - uScale));
-          
-              vec4 txt = texture2D( t, gl_PointCoord );
-              gl_FragColor = txt * vec4(color, opacity );
-
-    // vec4 t1 = texture2D(t,gl_PointCoord);
-
-
-      
-
-
-    
-    // gl_FragColor = vec4( color * vColor, 1.0 );
-    // gl_FragColor = gl_FragColor * texture2D( t, gl_PointCoord );
-
-    // if ( gl_FragColor.a < alphaTest ) discard;
-
-    // gl_FragColor = vec4(vUv,1.,1.);
-
+ 
+    gl_FragColor = vec4(abs(sin(vPosition * 1.2)),1.) * t1;
+     
 }
