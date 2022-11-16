@@ -1,4 +1,4 @@
-
+precision lowp float;
 
 
 uniform float u_time;
@@ -13,6 +13,7 @@ uniform vec3 u_color2;
 uniform vec3 u_color3;
 uniform float u_opacity;
 uniform float aRandom;
+varying float time;
 
 
 void main(){
@@ -29,7 +30,26 @@ void main(){
    col += mix(mixA,mixB,smoothstep(transformed.x * 0.1, transformed.x,transformed));
    
 
- 
+    //   vec2 point = gl_PointCoord * 2. - 1.;
+    //   float alpha = max(1. - length(point), .75);
+    
+    //   vec4 texture = texture2D(t, gl_PointCoord);
+    //   vec4 color = vec4(u_color1, 1.);
+    //   vec4 dist = mix(color, texture, alpha);
+
+//    if(dist.a < 0.01){
+//         discard;
+//     }else{
+//         gl_FragColor = dist;
+//         gl_FragColor.r = gl_FragColor.r - cos(u_time * .1) * .5 + (aRandom * .25);
+//         gl_FragColor.g = gl_FragColor.g - sin(u_time * .1) * .25 + (aRandom * .25);
+//         gl_FragColor.b = gl_FragColor.b + cos(u_time * .1) * .25 + (aRandom * .25);
+//         gl_FragColor.a = gl_FragColor.a - .5 - (sin(u_time) * .25);
+//     };
     gl_FragColor = vec4(abs(sin(vPosition * 1.2)),1.) * t1;
+    
+
+    
+
      
 }
