@@ -517,14 +517,6 @@ export default class App {
           z: 15,
         },
         ">-=0.5"
-      )
-
-      .to(
-        this.mesh.material.uniforms.u_size,
-        {
-          value: 20,
-        },
-        ">-=0.5"
       );
 
     //   .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0.5], ">-=0.5")

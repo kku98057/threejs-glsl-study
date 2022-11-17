@@ -63,25 +63,25 @@ void main() {
     //     // transformed += u_morphTarget3;
     // }
     
-    // transformed.x += sin(aRandom.x * time) * 0.04;
-    // transformed.y += cos(aRandom.y * time) * 0.04;
-    // transformed.z += cos(aRandom.z * time) * 0.04;
+    transformed.x += sin(aRandom.x * time) * 0.04;
+    transformed.y += cos(aRandom.y * time) * 0.04;
+    transformed.z += cos(aRandom.z * time) * 0.04;
     
     //   vec3 first = mix(position2, position3, (sin(time) * 0.001) * u_morphTarget1 + u_morphTarget1);
 
     // transformed += first;
-    vec3 morphed = vec3( 0.0 );
+//     vec3 morphed = vec3( 0.0 );
     
-    morphed += ( morphTarget - position ) * u_morphTargetInfluences[ 0 ];
-			morphed += ( morphTarget1 - position ) * u_morphTargetInfluences[ 1 ];
-			morphed += ( morphTarget2 - position ) * u_morphTargetInfluences[ 2 ];
-			morphed += ( morphTarget3 - position ) * u_morphTargetInfluences[ 3 ];
+//     morphed += ( morphTarget - position ) * u_morphTargetInfluences[ 0 ];
+// 			morphed += ( morphTarget1 - position ) * u_morphTargetInfluences[ 1 ];
+// 			morphed += ( morphTarget2 - position ) * u_morphTargetInfluences[ 2 ];
+// 			morphed += ( morphTarget3 - position ) * u_morphTargetInfluences[ 3 ];
 
     
-morphed += position;
-    vec4 mvPosition = modelViewMatrix * vec4( morphed , 1.);
+// morphed += position;
+    vec4 mvPosition = modelViewMatrix * vec4( transformed , 1.);
     
     gl_PointSize = u_size * (1. / - mvPosition.z);
-gl_Position = projectionMatrix * (modelViewMatrix * vec4( morphed, 1.0 ));
+gl_Position = projectionMatrix *mvPosition;
     
 }
