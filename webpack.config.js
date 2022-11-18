@@ -39,6 +39,7 @@ module.exports = {
       chunks: "all",
     },
   },
+  devtool: "inline-source-map",
   module: {
     rules: [
       {
