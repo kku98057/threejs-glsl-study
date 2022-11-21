@@ -13,6 +13,7 @@ import earth from "../3DTexture/earth.glb";
 import land from "../3DTexture/land.glb";
 import rocket from "../3DTexture/rocket.glb";
 import logo from "../3DTexture/logo.glb";
+import character from "../3DTexture/character.glb";
 import t1Texture from "../img/circle.png";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
@@ -47,7 +48,7 @@ export default class App {
     this.clock = new THREE.Clock();
 
     // this.camera.position.set(0, 0, 12);
-    this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 6 : 4);
+    this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 6 : 3);
 
     this.renderScene = new RenderPass(this.scene, this.camera);
 
@@ -59,9 +60,9 @@ export default class App {
     );
     this.params = {
       exposure: 1,
-      bloomStrength: 1.5,
+      bloomStrength: 1,
       bloomThreshold: 0,
-      bloomRadius: 0,
+      bloomRadius: 0.5,
     };
 
     this.bloomPass.threshold = this.params.bloomThreshold;
@@ -105,21 +106,7 @@ export default class App {
     this.gui = new dat.GUI();
 
     // this.gui.add(this.settings, "progress", 0, 1, 0.01);
-    this.gui.add(this.settings, "earth", 0, 1, 0.01).onChange((value) => {
-      this.mesh.morphTargetInfluences[0] = value;
-    });
-    this.gui.add(this.settings, "rocket", 0, 1, 0.01).onChange((value) => {
-      this.mesh.morphTargetInfluences[1] = value;
-    });
-    this.gui.add(this.settings, "land", 0, 1, 0.01).onChange((value) => {
-      this.mesh.morphTargetInfluences[2] = value;
-    });
-    this.gui.add(this.settings, "logo", 0, 1, 0.01).onChange((value) => {
-      this.mesh.morphTargetInfluences[3] = value;
-    });
-    this.gui.add(this.settings, "sphere", 0, 1, 0.01).onChange((value) => {
-      this.mesh.morphTargetInfluences[4] = value;
-    });
+
     // this.cc = this.gui.addFolder("camera");
     // this.cc.open();
     // this.cc.add(this.camera.position, "x", 0, 100, 0.1);
@@ -164,6 +151,7 @@ export default class App {
     this.loader2 = new GLTFLoader();
     this.loader3 = new GLTFLoader();
     this.loader4 = new GLTFLoader();
+    this.loader5 = new GLTFLoader();
     this.draco = new DRACOLoader();
     this.draco.setDecoderPath(
       "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/js/libs/draco/"
@@ -172,34 +160,36 @@ export default class App {
     this.loader2.setDRACOLoader(this.draco);
     this.loader3.setDRACOLoader(this.draco);
     this.loader4.setDRACOLoader(this.draco);
+    this.loader5.setDRACOLoader(this.draco);
     this.modelData = [
       {
         src: earth,
         vertices: [],
-        colors: [],
+        normal: [],
         randoms: [],
       },
       {
         src: land,
         vertices: [],
-        colors: [],
+        normal: [],
         randoms: [],
       },
       {
         src: rocket,
         vertices: [],
-        colors: [],
+        normal: [],
+        randoms: [],
+      },
+      {
+        src: character,
+        vertices: [],
+        normal: [],
         randoms: [],
       },
       {
         src: logo,
         vertices: [],
-        colors: [],
-        randoms: [],
-      },
-      {
-        vertices: [],
-        colors: [],
+        normal: [],
         randoms: [],
       },
     ];
@@ -213,310 +203,359 @@ export default class App {
     await this.delay(100);
 
     window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
-    // tl1
-    //   .from(this.camera.position, {
-    //     z: 0,
-    //     duration: 3,
-    //   })
-    //   .from("body", {
-    //     overflowY: "hidden",
-    //   });
 
-    // const tl2 = gsap
-    //   .timeline({
-    //     scrollTrigger: {
-    //       trigger: ".section2",
-    //       scrub: 3,
-    //     },
-    //   })
-    //   .to(this.mesh.rotation, {
-    //     y: Math.PI,
-    //   })
-    //   .to(this.camera.position, {
-    //     z: 0,
-    //   });
     this.geometry = new THREE.BufferGeometry();
     this.loader1.load(this.modelData[0].src, (earth) => {
       this.loader2.load(this.modelData[1].src, (land) => {
         this.loader3.load(this.modelData[2].src, (rocket) => {
-          this.loader4.load(this.modelData[3].src, (logo) => {
-            this.material = new THREE.ShaderMaterial({
-              vertexShader: vertex,
-              fragmentShader: fragment,
-              blending: THREE.AdditiveBlending,
-              transparent: true,
-              depthTest: true,
-              depthWrite: false,
-              morphTarget: true,
-              extensions: {
-                derivatives: "#extension GL_OES_standard_derivatives : enable",
-              },
-              side: THREE.DoubleSide,
-              uniforms: {
-                u_time: { type: "f", value: 1 },
-                // u_size: { type: "f", value: 1 },
-                u_morphTargetInfluences: { type: "f", value: [1, 0, 0, 0, 0] },
-                u_resolution: { type: "v2", value: new THREE.Vector2() },
-                u_morphSphere: { type: "vec3", value: 0 },
-                t: {
-                  type: "f",
-                  value: new THREE.TextureLoader().load(t1Texture),
+          this.loader3.load(this.modelData[3].src, (character) => {
+            this.loader4.load(this.modelData[4].src, (logo) => {
+              this.material = new THREE.ShaderMaterial({
+                vertexShader: vertex,
+                fragmentShader: fragment,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false,
+                // morphTargets: true,
+                extensions: {
+                  derivatives:
+                    "#extension GL_OES_standard_derivatives : enable",
                 },
-                u_slide: { type: "f", value: 0 },
-                u_color1: { type: "v3", value: new THREE.Color("#006dff") },
-                u_color2: { type: "v3", value: new THREE.Color("#fc0001") },
-                u_color3: { type: "v3", value: new THREE.Color("#f2e300") },
-              },
-            });
+                side: THREE.DoubleSide,
+                uniforms: {
+                  u_time: { type: "f", value: 1 },
+                  u_size: { type: "f", value: 10 },
+                  u_morphTargetInfluences: {
+                    type: "f",
+                    value: [0, 0, 0, 0, 0],
+                  },
+                  u_resolution: { type: "v2", value: new THREE.Vector2() },
+                  alphaTest: { value: 1 },
+                  t: {
+                    type: "f",
+                    value: new THREE.TextureLoader().load(t1Texture),
+                  },
+                  u_slide: { type: "f", value: 0 },
+                  u_color1: { type: "v3", value: new THREE.Color("#006dff") },
+                  u_color2: { type: "v3", value: new THREE.Color("#fc0001") },
+                  u_color3: { type: "v3", value: new THREE.Color("#f2e300") },
+                },
+              });
+              this.material.uniformsNeedUpdate = true;
 
-            let loaders = [earth, land, rocket, logo];
-            loaders.forEach((model, idx) => {
-              model.scene.traverse((obj) => {
+              earth.scene.traverse((obj) => {
                 if (obj.isMesh) {
                   // 샘플러생성
-                  console.log(obj);
+
                   this.temPosition = new THREE.Vector3();
 
                   this.positionsArray = obj.geometry.attributes.position.array;
                   let sampler = new MeshSurfaceSampler(obj).build();
+                  this.modelData[0].normal.push(
+                    sampler.geometry.attributes.normal.array
+                  );
 
                   // 샘플러 위치 저장 및 난수*위치값 , 배경생성
-                  for (let i = 0; i < this.positionsArray.length; i += 3) {
+                  for (let i = 0; i < this.positionsArray.length / 4; i++) {
                     sampler.sample(this.temPosition);
 
-                    this.modelData[idx].vertices.push(
+                    this.modelData[0].vertices.push(
                       this.temPosition.x,
                       this.temPosition.y,
                       this.temPosition.z
                     );
-                    this.modelData[idx].randoms.push(
+                    this.modelData[0].randoms.push(
                       Math.random() - 0.5,
                       Math.random() - 0.5,
                       Math.random() - 0.5
                     );
                   }
-                  for (let i = 0; i < 700; i++) {
-                    let filedX = 10 * Math.random() - 5,
-                      filedY = 10 * Math.random() - 5,
-                      filedZ = 10 * Math.random() - 5;
-                    this.modelData[idx].vertices.push(filedX, filedY, filedZ);
+                }
+              });
+              land.scene.traverse((obj) => {
+                if (obj.isMesh) {
+                  // 샘플러생성
+
+                  this.temPosition = new THREE.Vector3();
+
+                  this.positionsArray = obj.geometry.attributes.position.array;
+                  let sampler = new MeshSurfaceSampler(obj).build();
+                  this.modelData[1].normal.push(
+                    sampler.geometry.attributes.normal.array
+                  );
+
+                  // 샘플러 위치 저장 및 난수*위치값 , 배경생성
+                  for (let i = 0; i < this.positionsArray.length; i++) {
+                    sampler.sample(this.temPosition);
+
+                    this.modelData[1].vertices.push(
+                      this.temPosition.x,
+                      this.temPosition.y,
+                      this.temPosition.z
+                    );
+                    this.modelData[1].randoms.push(
+                      Math.random() - 0.5,
+                      Math.random() - 0.5,
+                      Math.random() - 0.5
+                    );
                   }
                 }
               });
-            });
-            this.sphereGeo = new THREE.SphereGeometry(1, 64, 64);
-            this.sphereMesh = new THREE.Mesh(this.sphereGeo);
-            this.sphereSampler = new MeshSurfaceSampler(this.sphereMesh)
-              .setWeightAttribute(null)
-              .build();
-            this.sphererVector = new THREE.Vector3();
-            for (let i = 0; i < 700; i += 3) {
-              this.sphereSampler.sample(this.sphererVector);
-              this.modelData[4].vertices.push(
-                this.sphererVector.x,
-                this.sphererVector.y,
-                this.sphererVector.z
+              rocket.scene.traverse((obj) => {
+                if (obj.isMesh) {
+                  // 샘플러생성
+
+                  this.temPosition = new THREE.Vector3();
+
+                  this.positionsArray = obj.geometry.attributes.position.array;
+                  let sampler = new MeshSurfaceSampler(obj).build();
+                  this.modelData[2].normal.push(
+                    sampler.geometry.attributes.normal.array
+                  );
+
+                  // 샘플러 위치 저장 및 난수*위치값 , 배경생성
+                  for (let i = 0; i < this.positionsArray.length; i++) {
+                    sampler.sample(this.temPosition);
+
+                    this.modelData[2].vertices.push(
+                      this.temPosition.x,
+                      this.temPosition.y,
+                      this.temPosition.z
+                    );
+                    this.modelData[2].randoms.push(
+                      Math.random() - 0.5,
+                      Math.random() - 0.5,
+                      Math.random() - 0.5
+                    );
+                  }
+                }
+              });
+              character.scene.traverse((obj) => {
+                if (obj.isMesh) {
+                  // 샘플러생성
+
+                  this.temPosition = new THREE.Vector3();
+
+                  this.positionsArray = obj.geometry.attributes.position.array;
+                  let sampler = new MeshSurfaceSampler(obj).build();
+                  this.modelData[3].normal.push(
+                    sampler.geometry.attributes.normal.array
+                  );
+
+                  // 샘플러 위치 저장 및 난수*위치값 , 배경생성
+                  for (let i = 0; i < 27678; i++) {
+                    sampler.sample(this.temPosition);
+
+                    this.modelData[3].vertices.push(
+                      this.temPosition.x,
+                      this.temPosition.y,
+                      this.temPosition.z
+                    );
+                    this.modelData[3].randoms.push(
+                      Math.random() - 0.5,
+                      Math.random() - 0.5,
+                      Math.random() - 0.5
+                    );
+                  }
+                }
+              });
+              logo.scene.traverse((obj) => {
+                if (obj.isMesh) {
+                  // 샘플러생성
+
+                  this.temPosition = new THREE.Vector3();
+
+                  this.positionsArray = obj.geometry.attributes.position.array;
+                  let sampler = new MeshSurfaceSampler(obj).build();
+                  this.modelData[4].normal.push(
+                    sampler.geometry.attributes.normal.array
+                  );
+
+                  // 샘플러 위치 저장 및 난수*위치값 , 배경생성
+                  for (let i = 0; i < 27678; i++) {
+                    sampler.sample(this.temPosition);
+
+                    this.modelData[4].vertices.push(
+                      this.temPosition.x,
+                      this.temPosition.y,
+                      this.temPosition.z
+                    );
+                    this.modelData[4].randoms.push(
+                      Math.random() - 0.5,
+                      Math.random() - 0.5,
+                      Math.random() - 0.5
+                    );
+                  }
+                }
+              });
+
+              this.backgorund = [];
+              this.backColor = [];
+              this.backVector = new THREE.Vector3();
+
+              for (let i = 0; i < 1500; i++) {
+                let filedX = 50 * Math.random() - 25,
+                  filedY = 50 * Math.random() - 25,
+                  filedZ = 50 * Math.random() - 25;
+                this.backgorund.push(filedX, filedY, filedZ);
+                this.backColor.push(Math.random());
+              }
+              this.backgeo = new THREE.BufferGeometry();
+              this.backgeo.setAttribute(
+                "position",
+                new THREE.Float32BufferAttribute(this.backgorund, 3)
               );
-            }
+              this.backgeo.setAttribute(
+                "color",
+                new THREE.Float32BufferAttribute(this.backColor, 3)
+              );
+              this.backPoints = new THREE.PointsMaterial({
+                size: 0.05,
+                map: new THREE.TextureLoader().load("./asset/img/circle.png"),
+                // color: 0x00ff,
+                vertexColors: true,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false,
+              });
 
-            this.geometry.setAttribute(
-              "aRandom",
-              new THREE.Float32BufferAttribute(this.modelData[0].randoms, 3)
-            );
-            this.geometry.setDrawRange(1, this.modelData[0].randoms.length);
-            console.log(this.modelData[0].randoms);
-            this.geometry.setAttribute(
-              "positionSphere",
-              new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "position",
-              new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "position0",
-              new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "position1",
-              new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "position2",
-              new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "position3",
-              new THREE.Float32BufferAttribute(this.modelData[3].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "aRandom0",
-              new THREE.Float32BufferAttribute(this.modelData[0].randoms, 3)
-            );
-            this.geometry.setAttribute(
-              "aRandom1",
-              new THREE.Float32BufferAttribute(this.modelData[1].randoms, 3)
-            );
-            this.geometry.setAttribute(
-              "aRandom2",
-              new THREE.Float32BufferAttribute(this.modelData[2].randoms, 3)
-            );
-            this.geometry.setAttribute(
-              "aRandom3",
-              new THREE.Float32BufferAttribute(this.modelData[3].randoms, 3)
-            );
-            this.geometry.setAttribute(
-              "morphTarget0",
-              new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "morphTarget1",
-              new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "morphTarget2",
-              new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "morphTarget3",
-              new THREE.Float32BufferAttribute(this.modelData[3].vertices, 3)
-            );
-            this.geometry.setAttribute(
-              "morphSphere",
-              new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3)
-            );
+              this.backmesh = new THREE.Points(this.backgeo, this.backPoints);
+              this.backmesh.position.set(0, 0, 0);
+              this.scene.add(this.backmesh);
+              this.geometry.setAttribute(
+                "aRandom",
+                new THREE.Float32BufferAttribute(this.modelData[0].randoms, 3)
+              );
+              this.geometry.setAttribute(
+                "position",
+                new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
+              );
+              this.geometry.setAttribute(
+                "morphTarget0",
+                new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
+              );
+              this.geometry.setAttribute(
+                "morphTarget1",
+                new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3)
+              );
+              this.geometry.setAttribute(
+                "morphTarget2",
+                new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3)
+              );
+              this.geometry.setAttribute(
+                "morphTarget3",
+                new THREE.Float32BufferAttribute(this.modelData[3].vertices, 3)
+              );
+              this.geometry.setAttribute(
+                "morphTarget4",
+                new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3)
+              );
 
-            this.geometry.morphAttributes.position = [];
-            this.geometry.morphAttributes.color = [];
-            this.geometry.morphAttributes.random = [];
+              this.mesh = new THREE.Points(this.geometry, this.material);
+              this.mesh.updateMorphTargets();
 
-            // earth
-            this.geometry.morphAttributes.position[0] =
-              new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3);
+              this.scene.add(this.mesh);
 
-            this.geometry.morphAttributes.color[0] =
-              new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3);
+              this.gui.add(this.mesh.scale, "x", 0.001, 5, 0.001);
+              this.gui.add(this.mesh.scale, "y", 0.001, 5, 0.001);
+              this.gui.add(this.mesh.scale, "z", 0.001, 5, 0.001);
+              console.log(this.geometry);
 
-            this.geometry.morphAttributes.random[0] =
-              new THREE.Float32BufferAttribute(this.modelData[0].randoms, 3);
+              const tl = gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: ".section1",
+                    markers: true,
+                    scrub: 3,
+                    pin: true,
+                    end: "+=2000",
+                  },
+                })
+                .to(
+                  this.material.uniforms.u_morphTargetInfluences.value,
+                  [0, 0, 0, 0, 0]
+                );
 
-            // land
-            this.geometry.morphAttributes.position[1] =
-              new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3);
+              const tl2 = gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: ".section2",
+                    scrub: 3,
+                    pin: true,
+                    end: "+=2000",
+                    markers: true,
+                  },
+                })
+                .to(
+                  this.material.uniforms.u_morphTargetInfluences.value,
+                  [0, 1, 0, 0, 0]
+                );
 
-            this.geometry.morphAttributes.color[1] =
-              new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3);
+              const tl3 = gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: ".section3",
+                    scrub: 3,
+                    pin: true,
+                    end: "+=2000",
+                    markers: true,
+                  },
+                })
+                .to(
+                  this.material.uniforms.u_morphTargetInfluences.value,
+                  [0, 0, 1, 0, 0]
+                );
 
-            this.geometry.morphAttributes.random[1] =
-              new THREE.Float32BufferAttribute(this.modelData[1].randoms, 3);
-            // rocket
-            this.geometry.morphAttributes.position[2] =
-              new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3);
+              const tl4 = gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: ".section4",
+                    scrub: 3,
+                    pin: true,
+                    end: "+=2000",
+                    markers: true,
+                  },
+                })
+                .to(
+                  this.material.uniforms.u_morphTargetInfluences.value,
+                  [0, 0, 0, 1, 0]
+                );
 
-            this.geometry.morphAttributes.color[2] =
-              new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3);
+              const tl5 = gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: ".section5",
+                    scrub: 3,
+                    pin: true,
+                    end: "+=2000",
+                    markers: true,
+                  },
+                })
 
-            this.geometry.morphAttributes.random[2] =
-              new THREE.Float32BufferAttribute(this.modelData[2].randoms, 3);
-
-            // logo
-            this.geometry.morphAttributes.position[3] =
-              new THREE.Float32BufferAttribute(this.modelData[3].vertices, 3);
-
-            this.geometry.morphAttributes.color[3] =
-              new THREE.Float32BufferAttribute(this.modelData[3].vertices, 3);
-
-            this.geometry.morphAttributes.random[3] =
-              new THREE.Float32BufferAttribute(this.modelData[3].randoms, 3);
-
-            // sphere
-            this.geometry.morphAttributes.position[4] =
-              new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3);
-            this.geometry.morphAttributes.color[4] =
-              new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3);
-
-            this.geometry.morphAttributes.random[4] =
-              new THREE.Float32BufferAttribute(this.modelData[4].randoms, 3);
-
-            this.mesh = new THREE.Points(this.geometry, this.material);
-
-            this.scene.add(this.mesh);
-            // this.scene.add(this.mesh2);
-
-            this.gui.add(this.mesh.scale, "x", 0.001, 5, 0.001);
-            this.gui.add(this.mesh.scale, "y", 0.001, 5, 0.001);
-            this.gui.add(this.mesh.scale, "z", 0.001, 5, 0.001);
-
-            const tl = gsap.timeline();
-
-            const tl2 = gsap.timeline({
-              scrollTrigger: {
-                trigger: ".section2",
-
-                markers: true,
-              },
-            });
-
-            const tl3 = gsap
-              .timeline({
-                scrollTrigger: {
-                  trigger: ".section2",
-                  pin: true,
-                  end: "+=3000",
-                  scrub: 3,
-                  markers: true,
-                },
-              })
-              .to(this.material.uniforms.u_slide, {
-                value: 2,
-              })
-              .to(this.mesh.morphTargetInfluences, [0, 0, 0, 0, 0]);
-
-            //   .to(this.mesh.rotation, {
-            //     y: Math.PI,
-            //   })
-            //   .to(
-            //     this.camera.position,
-            //     {
-            //       z: 15,
-            //     },
-            //     ">-=0.5"
-            //   )
-
-            //   .to(
-            //     this.mesh.material.uniforms.u_size,
-            //     {
-            //       value: 20,
-            //     },
-            //     ">-=0.5"
-            //   );
-
-            //   .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0.5], ">-=0.5")
-            //   .to(this.mesh.morphTargetInfluences, 0.5, [0, 0, 1])
-            //   .to(
-            //     this.mesh.rotation,
-            //     {
-            //       y: Math.PI * 3,
-            //       z: Math.PI * 0.5,
-            //     },
-            //     ">-=0.4"
-            //   )
-            //   .to(this.mesh.rotation, {
-            //     y: Math.PI * 4,
-            //     z: 0,
-            //   })
-            //   .to(
-            //     {},
-            //     {
-            //       duration: 0.5,
-            //     }
-            //   );
-            // window.addEventListener("scroll", () => {
-            //   console.log(this.mesh.material.uniforms.u_morphTargetInfluences.value);
-            // });
-          }); // last load
+                .to(
+                  this.material.uniforms.u_morphTargetInfluences.value,
+                  [0, 0, 0, 0, 1]
+                )
+                .to(
+                  this.mesh.position,
+                  {
+                    y: 0.5,
+                    x: -2,
+                  },
+                  ">-=0.5"
+                )
+                .to(this.mesh.rotation, {
+                  y: Math.PI * 2,
+                });
+            }); // last load
+          });
         });
       });
+    });
+    window.addEventListener("scroll", () => {
+      console.log(this.mesh.geometry.drawRange);
+      console.log(this.mesh.geometry);
     });
   }
 
@@ -537,9 +576,9 @@ export default class App {
 
     if (this.mesh) {
       this.mesh.rotation.y -= this.delta * 0.1;
+
+      this.backmesh.rotation.y += this.delta * 0.01;
       this.material.uniforms.u_time.value += Math.sin(0.3);
-      this.mesh.morphTargetInfluences =
-        this.material.uniforms.u_morphTargetInfluences.value;
     }
   }
   render() {
