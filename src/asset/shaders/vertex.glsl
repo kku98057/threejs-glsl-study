@@ -18,6 +18,8 @@ attribute vec3 normal3;
 uniform float u_morphTargetInfluences[ 5 ];
 uniform float u_size;
 
+varying vec3 v_morphTarget1;
+
 
 
 varying float time;
@@ -35,7 +37,7 @@ void main() {
 
     float size = u_size;
 
-
+  vec3 v_morphTarget1 = morphTarget1;
 
 
     vec3 morphed = vec3( 0.0 , 0.0 , 0.0 ); 

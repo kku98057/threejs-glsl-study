@@ -16,13 +16,17 @@ import logo from "../3DTexture/logo.glb";
 import character from "../3DTexture/character.glb";
 import t1Texture from "../img/circle.png";
 import gsap from "gsap";
+
 import { ScrollTrigger } from "gsap/all";
 import * as dat from "dat.gui";
+import LocomotiveScroll from "locomotive-scroll";
 
 // import fragment from "./fragment.glsl"
 export default class App {
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
+
+    Splitting();
     this.delay = (time, value) =>
       new Promise((resolve) => {
         setTimeout(() => resolve(value), time);
@@ -48,7 +52,7 @@ export default class App {
     this.clock = new THREE.Clock();
 
     // this.camera.position.set(0, 0, 12);
-    this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 6 : 3);
+    this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 5 : 4);
 
     this.renderScene = new RenderPass(this.scene, this.camera);
 
@@ -102,10 +106,14 @@ export default class App {
       land: 0,
       rocket: 0,
       logo: 0,
+      alphaTest: 0,
     };
     this.gui = new dat.GUI();
 
     // this.gui.add(this.settings, "progress", 0, 1, 0.01);
+    // this.gui.add(this.settings, "alphaTest", 0, 1, 0.001).onChange((value) => {
+    //   this.material.uniforms.alphaTest.value = value;
+    // });
 
     // this.cc = this.gui.addFolder("camera");
     // this.cc.open();
@@ -115,10 +123,10 @@ export default class App {
 
     // this.pp = this.gui.addFolder("postprocessing");
     // this.pp.open();
-    // this.pp.add(this.bloomPass, "threshold", 0, 10, 1);
-    // this.pp.add(this.bloomPass, "strength", 0, 10, 1);
-    // this.pp.add(this.bloomPass, "radius", 0, 10, 1);
-    // this.pp.add(this.bloomPass, "exposure", 0, 10, 1);
+    // this.pp.add(this.bloomPass, "threshold", 0, 1, 0.01);
+    // this.pp.add(this.bloomPass, "strength", 0, 1, 0.01);
+    // this.pp.add(this.bloomPass, "radius", 0, 1, 0.01);
+    // this.pp.add(this.bloomPass, "exposure", 0, 1, 0.01);
 
     // this.md = this.gui.addFolder("model");
     // this.md.open();
@@ -135,11 +143,11 @@ export default class App {
 
     this.scene.add(this.light);
 
-    this.ll = this.gui.addFolder("light");
-    this.ll.open();
-    this.ll.add(this.light.position, "x", -10, 10, 0.1);
-    this.ll.add(this.light.position, "y", -10, 10, 0.1);
-    this.ll.add(this.light.position, "z", -10, 10, 0.1);
+    // this.ll = this.gui.addFolder("light");
+    // this.ll.open();
+    // this.ll.add(this.light.position, "x", -10, 10, 0.1);
+    // this.ll.add(this.light.position, "y", -10, 10, 0.1);
+    // this.ll.add(this.light.position, "z", -10, 10, 0.1);
   }
   getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -202,8 +210,6 @@ export default class App {
 
     await this.delay(100);
 
-    window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
-
     this.geometry = new THREE.BufferGeometry();
     this.loader1.load(this.modelData[0].src, (earth) => {
       this.loader2.load(this.modelData[1].src, (land) => {
@@ -217,7 +223,7 @@ export default class App {
                 transparent: true,
                 depthTest: true,
                 depthWrite: false,
-                // morphTargets: true,
+
                 extensions: {
                   derivatives:
                     "#extension GL_OES_standard_derivatives : enable",
@@ -257,7 +263,7 @@ export default class App {
                   );
 
                   // 샘플러 위치 저장 및 난수*위치값 , 배경생성
-                  for (let i = 0; i < this.positionsArray.length / 4; i++) {
+                  for (let i = 0; i < this.positionsArray.length / 2; i++) {
                     sampler.sample(this.temPosition);
 
                     this.modelData[0].vertices.push(
@@ -323,11 +329,6 @@ export default class App {
                       this.temPosition.y,
                       this.temPosition.z
                     );
-                    this.modelData[2].randoms.push(
-                      Math.random() - 0.5,
-                      Math.random() - 0.5,
-                      Math.random() - 0.5
-                    );
                   }
                 }
               });
@@ -351,11 +352,6 @@ export default class App {
                       this.temPosition.x,
                       this.temPosition.y,
                       this.temPosition.z
-                    );
-                    this.modelData[3].randoms.push(
-                      Math.random() - 0.5,
-                      Math.random() - 0.5,
-                      Math.random() - 0.5
                     );
                   }
                 }
@@ -413,7 +409,7 @@ export default class App {
               this.backPoints = new THREE.PointsMaterial({
                 size: 0.05,
                 map: new THREE.TextureLoader().load("./asset/img/circle.png"),
-                // color: 0x00ff,
+
                 vertexColors: true,
                 transparent: true,
                 depthTest: true,
@@ -453,110 +449,340 @@ export default class App {
               );
 
               this.mesh = new THREE.Points(this.geometry, this.material);
-              this.mesh.updateMorphTargets();
 
               this.scene.add(this.mesh);
 
-              this.gui.add(this.mesh.scale, "x", 0.001, 5, 0.001);
-              this.gui.add(this.mesh.scale, "y", 0.001, 5, 0.001);
-              this.gui.add(this.mesh.scale, "z", 0.001, 5, 0.001);
-              console.log(this.geometry);
+              // this.gui.add(this.mesh.scale, "x", 0.001, 5, 0.001);
+              // this.gui.add(this.mesh.scale, "y", 0.001, 5, 0.001);
+              // this.gui.add(this.mesh.scale, "z", 0.001, 5, 0.001);
+              // --- SETUP START ---
+              // Using Locomotive Scroll from Locomotive https://github.com/locomotivemtl/locomotive-scroll
+              // const locoScroll = new LocomotiveScroll({
+              //   el: document.querySelector(".smooth-scroll"),
+              //   smooth: true,
+              //   lerp: 0.05,
+              //   multiplier: 0.6,
+              //   tablet: { smooth: true },
+              //   smartphone: { smooth: true },
+              // });
+              // // each time Locomotive Scroll updates, tell ScrollTrigger to update too (sync positioning)
+              // locoScroll.on("scroll", ScrollTrigger.update);
 
-              const tl = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: ".section1",
-                    markers: true,
-                    scrub: 3,
-                    pin: true,
-                    end: "+=2000",
-                  },
-                })
-                .to(
-                  this.material.uniforms.u_morphTargetInfluences.value,
-                  [0, 0, 0, 0, 0]
+              // // tell ScrollTrigger to use these proxy methods for the ".smooth-scroll" element since Locomotive Scroll is hijacking things
+              // ScrollTrigger.scrollerProxy(".smooth-scroll", {
+              //   scrollTop(value) {
+              //     return arguments.length
+              //       ? locoScroll.scrollTo(value, {
+              //           duration: 0,
+              //           disableLerp: true,
+              //         })
+              //       : locoScroll.scroll.instance.scroll.y;
+              //   }, // we don't have to define a scrollLeft because we're only scrolling vertically.
+              //   getBoundingClientRect() {
+              //     return {
+              //       top: 0,
+              //       left: 0,
+              //       width: window.innerWidth,
+              //       height: window.innerHeight,
+              //     };
+              //   },
+              //   // LocomotiveScroll handles things completely differently on mobile devices - it doesn't even transform the container at all! So to get the correct behavior and avoid jitters, we should pin things with position: fixed on mobile. We sense it by checking to see if there's a transform applied to the container (the LocomotiveScroll-controlled element).
+              //   pinType: document.querySelector(".smooth-scroll").style
+              //     .transform
+              //     ? "transform"
+              //     : "fixed",
+              // });
+
+              // // each time the window updates, we should refresh ScrollTrigger and then update LocomotiveScroll.
+              // ScrollTrigger.addEventListener("refresh", () =>
+              //   locoScroll.update()
+              // );
+              // ScrollTrigger.defaults({ scroller: ".smooth-scroll" });
+              // --- SETUP END ---
+
+              // const tl = gsap.timeline({
+              //   scrollTrigger: {
+              //     trigger: ".scroll1",
+              //     // start: "0% 75%",
+              //     // end: "100% 25%",
+              //     scrub: 1,
+              //     // pin: true,
+              //     // end: `+=${window.innerHeight}`,
+              //     onUpdate: (slef) => {
+              //       console.log(slef);
+              //     },
+              //     // markers: true,
+              //   },
+              //   defaults: { duration: 1, ease: "none" },
+              // });
+              // // tl.to(this.material.uniforms.u_morphTargetInfluences.value, [
+              // //   (1, 0, 0, 0, 0),
+              // // ]);
+              // tl.to(
+              //   this.camera.position,
+              //   {
+              //     z: 3,
+              //   },
+              //   ">-0.5"
+              // );
+              // tl.to(
+              //   this.mesh.rotation,
+              //   {
+              //     y: Math.PI,
+              //   },
+              //   ">-0.5"
+              // );
+              // tl.from(".s1_wrap h2", {
+              //   yPercent: 100,
+              //   skewY: 25,
+              //   transformOrigin: "0 50%",
+              // });
+              // tl.from(
+              //   ".s1_wrap p",
+              //   {
+              //     yPercent: 100,
+              //     skewY: 25,
+              //     transformOrigin: "0 50%",
+              //   },
+              //   ">-1"
+              // );
+
+              const tl2 = gsap.timeline({
+                scrollTrigger: {
+                  trigger: ".scroll2",
+                  // start: "0% 75%",
+                  // end: "100% 25%",
+                  scrub: 1,
+                  // pin: true,
+                  // end: `+=${window.innerHeight}`,
+
+                  // markers: true,
+                },
+                defaults: { duration: 1, ease: "none" },
+              });
+              tl2.to(".s1_wrap h2", {
+                yPercent: -100,
+                skewY: -15,
+                transformOrigin: "0 50%",
+              });
+              tl2.to(
+                ".s1_wrap p",
+                {
+                  yPercent: -100,
+                  skewY: -15,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl2.from(".s2_wrap h2", {
+                yPercent: 100,
+                skewY: 25,
+                transformOrigin: "0 50%",
+              });
+              tl2.from(
+                ".s2_wrap p",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl2.to(
+                this.camera.position,
+                {
+                  z: 3,
+                },
+                ">-1"
+              );
+              tl2.to(this.mesh.rotation, { y: Math.PI * 0.5 }, ">-0.5");
+              tl2.to(this.camera.position, {
+                z: 6,
+              });
+
+              tl2.to(".s2_wrap h2", {
+                yPercent: -100,
+                skewY: -15,
+                transformOrigin: "0 50%",
+              });
+              tl2.to(
+                ".s2_wrap p",
+                {
+                  yPercent: -100,
+                  skewY: -15,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+
+              const tl3 = gsap.timeline({
+                scrollTrigger: {
+                  trigger: ".scroll3",
+                  scrub: 1,
+                },
+                defaults: { duration: 1, ease: "none" },
+              });
+              tl3.to(this.mesh.rotation, {
+                y: Math.PI,
+              });
+              tl3.from(
+                ".s3_wrap h2",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl3.from(
+                ".s3_wrap p",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl3.to(".s3_wrap h2", {
+                delay: 0.5,
+                yPercent: -100,
+                skewY: -15,
+                transformOrigin: "0 50%",
+              });
+              tl3.to(
+                ".s3_wrap p",
+                {
+                  delay: 0.5,
+                  yPercent: -100,
+                  skewY: -15,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+
+              const tl4 = gsap.timeline({
+                scrollTrigger: {
+                  trigger: ".scroll4",
+                  // start: "0% 75%",
+                  // end: "100% 25%",
+                  scrub: 1,
+                  // pin: true,
+                  // end: `+=${window.innerHeight}`,
+
+                  // markers: true,
+                },
+                defaults: { duration: 1, ease: "none" },
+              });
+              // tl4.to(
+              //   this.material.uniforms.u_morphTargetInfluences.value,
+              //   [0, 0, 0, 1, 0]
+              // );
+              tl4.from(".s4_wrap h2", {
+                yPercent: 100,
+                skewY: 25,
+                transformOrigin: "0 50%",
+              });
+              tl4.from(
+                ".s4_wrap p",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl4.to(".s4_wrap h2", {
+                delay: 0.5,
+                yPercent: -100,
+                skewY: -15,
+                transformOrigin: "0 50%",
+              });
+              tl4.to(
+                ".s4_wrap p",
+                {
+                  delay: 0.5,
+                  yPercent: -100,
+                  skewY: -15,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              const tl5 = gsap.timeline({
+                scrollTrigger: {
+                  trigger: ".scroll5",
+                  // start: "0% 75%",
+                  // end: "100% 25%",
+                  scrub: 1,
+                  // pin: true,
+                  // end: `+=${window.innerHeight}`,
+
+                  // markers: true,
+                },
+                defaults: { duration: 1, ease: "none" },
+              });
+              // tl5.to(
+              //   this.material.uniforms.u_morphTargetInfluences.value,
+              //   [0, 0, 0, 0, 1]
+              // );
+              tl5.from(".s5_wrap h2", {
+                yPercent: 100,
+                skewY: 25,
+                transformOrigin: "0 50%",
+              });
+              tl5.from(
+                ".s5_wrap p",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+              tl5.to(".s5_wrap h2", {});
+              const tl6 = gsap.timeline({
+                scrollTrigger: {
+                  trigger: "main",
+                  // start: "0% 75%",
+                  // end: "100% 25%",
+                  scrub: 1,
+
+                  // pin: true,
+                  end: "80% 0%",
+                  // markers: true,
+                },
+                defaults: { duration: 1, ease: "none", delay: 0.2 },
+              });
+              tl6.to(
+                this.material.uniforms.u_morphTargetInfluences.value,
+                [0, 0, 0, 0, 0]
+              );
+              tl6.to(
+                this.material.uniforms.u_morphTargetInfluences.value,
+                [0, 1, 0, 0, 0]
+              );
+              tl6.to(
+                this.material.uniforms.u_morphTargetInfluences.value,
+                [0, 0, 1, 0, 0]
+              );
+              tl6.to(
+                this.material.uniforms.u_morphTargetInfluences.value,
+                [0, 0, 0, 1, 0]
+              );
+              tl6.to(
+                this.material.uniforms.u_morphTargetInfluences.value,
+                [0, 0, 0, 0, 1]
+              );
+              window.addEventListener("scroll", () => {
+                console.log(
+                  this.material.uniforms.u_morphTargetInfluences.value
                 );
-
-              const tl2 = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: ".section2",
-                    scrub: 3,
-                    pin: true,
-                    end: "+=2000",
-                    markers: true,
-                  },
-                })
-                .to(
-                  this.material.uniforms.u_morphTargetInfluences.value,
-                  [0, 1, 0, 0, 0]
-                );
-
-              const tl3 = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: ".section3",
-                    scrub: 3,
-                    pin: true,
-                    end: "+=2000",
-                    markers: true,
-                  },
-                })
-                .to(
-                  this.material.uniforms.u_morphTargetInfluences.value,
-                  [0, 0, 1, 0, 0]
-                );
-
-              const tl4 = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: ".section4",
-                    scrub: 3,
-                    pin: true,
-                    end: "+=2000",
-                    markers: true,
-                  },
-                })
-                .to(
-                  this.material.uniforms.u_morphTargetInfluences.value,
-                  [0, 0, 0, 1, 0]
-                );
-
-              const tl5 = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: ".section5",
-                    scrub: 3,
-                    pin: true,
-                    end: "+=2000",
-                    markers: true,
-                  },
-                })
-
-                .to(
-                  this.material.uniforms.u_morphTargetInfluences.value,
-                  [0, 0, 0, 0, 1]
-                )
-                .to(
-                  this.mesh.position,
-                  {
-                    y: 0.5,
-                    x: -2,
-                  },
-                  ">-=0.5"
-                )
-                .to(this.mesh.rotation, {
-                  y: Math.PI * 2,
-                });
+              });
             }); // last load
           });
         });
       });
     });
-    window.addEventListener("scroll", () => {
-      console.log(this.mesh.geometry.drawRange);
-      console.log(this.mesh.geometry);
-    });
+    window.addEventListener("scroll", (e) => {});
   }
 
   setResize() {
@@ -567,7 +793,7 @@ export default class App {
     this.composer.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 6 : 4);
-
+    ScrollTrigger.refresh();
     this.camera.updateProjectionMatrix();
   }
   update() {
@@ -577,7 +803,7 @@ export default class App {
     if (this.mesh) {
       this.mesh.rotation.y -= this.delta * 0.1;
 
-      this.backmesh.rotation.y += this.delta * 0.01;
+      this.backmesh.rotation.y += this.delta * 0.1;
       this.material.uniforms.u_time.value += Math.sin(0.3);
     }
   }

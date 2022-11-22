@@ -8,68 +8,100 @@
 	<title>Document</title>
 	<link rel="stylesheet" href="./asset/css/reset.css">
 	<link rel="stylesheet" href="./main.css">
-
-
+	<link rel="stylesheet" href="https://unpkg.com/splitting/dist/splitting.css" />
+	<link rel="stylesheet" href="https://unpkg.com/splitting/dist/splitting-cells.css" />
+	<script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
 </head>
-<style>
-	section {
-		height: 100vh;
-		position: relative;
-		width: 100%;
-	}
 
-	.section1 {
-		height: 200vh
-	}
-
-
-
-	h1,
-	h2,
-	h3,
-	p {
-		font-family: 150px;
-		color: #fff
-	}
-
-	.container {
-		width: 100%;
-		max-width: 1280px;
-		margin: 0 auto;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-</style>
 
 <body>
-	<div class="webgl"></div>
-	<section class="section1">
-		<h1>안녕하세요</h1>
-	</section>
-	<section class="section2">
-		<h2>안녕하세요2</h2>
-	</section>
-	<section class="section3">
-		<div class="container">
-			<h3>hello</h3>
-			<p>안녕하세요</p>
-		</div>
-	</section>
-	<section class="section4">
-		<div class="container">
-			<h3>hello2</h3>
-			<p>안녕하세요2</p>
-		</div>
-	</section>
-	<section class="section5">
-		<div class="container">
-			<h3>hello2</h3>
-			<p>안녕하세요2</p>
-		</div>
-	</section>
+	<div class="wrap">
+		<main class="main">
+			<div class="webgl"></div>
+			<div class="scrollContainer ">
+				<div class="scroll_wrap scroll1">
+					<div class="scroll_content"></div>
+				</div>
+				<div class="scroll_wrap scroll2">
+					<div class="scroll_content"></div>
+				</div>
+				<div class="scroll_wrap scroll3">
+					<div class="scroll_content"></div>
+				</div>
+				<div class="scroll_wrap scroll4">
+					<div class="scroll_content"></div>
+				</div>
+				<div class="scroll_wrap scroll5">
+					<div class="scroll_content"></div>
+				</div>
+			</div>
+			<div class="section_wrap">
+				<section class="section1 ">
+					<div class="container">
+						<div class="s1_wrap common_wrap">
+							<div class="common_title">
+								<h2>Earth</h2>
+							</div>
+							<div class="common_p">
+								<p>this is my study page</p>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section class="section2 ">
+					<div class="container">
+						<div class="s2_wrap common_wrap">
+							<div class="common_title">
+								<h2>Land</h2>
+							</div>
+							<div class="common_p">
+								<p>this is my study page</p>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section class="section3 ">
+					<div class="container">
+						<div class="s3_wrap common_wrap">
+							<div class="common_title">
+								<h2>Rocket</h2>
+							</div>
+							<div class="common_p">
+								<p>this is my study page</p>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section class="section4 ">
+					<div class="container">
+						<div class="s4_wrap common_wrap">
+							<div class="common_title">
+								<h2>Charactor</h2>
+							</div>
+							<div class="common_p">
+								<p>this is my study page</p>
+							</div>
+						</div>
 
+					</div>
+				</section>
+				<section class="section5 ">
+					<div class="container">
+						<div class="s5_wrap common_wrap">
+							<div class="common_title">
+								<h2>Logo</h2>
+							</div>
+							<div class="common_p">
+								<p>this is my study page</p>
+							</div>
+						</div>
+					</div>
+				</section>
+			</div>
+		</main>
+	</div>
 </body>
 
 </html>

@@ -15,32 +15,29 @@ uniform vec3 u_color3;
 
 varying float time;
 uniform float alphaTest;
-
+varying vec3 v_morphTarget1;
 
 
 
 void main(){
     vec4 t1 = texture2D(t,gl_PointCoord);
-//    vec2 coord = gl_FragCoord.xy/u_resolution;
+   vec2 coord = gl_FragCoord.xy/u_resolution;
      vec2 xy = gl_PointCoord.xy - vec2(0.5);
     vec3 col  = vec3(0.);
     vec3 transformed = vec3(vPosition);
+         float ll = length(xy);
 
    
 
-   vec3 mixA = mix(u_color1,u_color2,xy.x);
-   vec3 mixB = mix(u_color2,u_color3,xy.x);
+   vec3 mixA = mix(u_color1,u_color2,step(ll, vPosition.z ) * alphaTest);
+   vec3 mixB = mix(u_color2,u_color3,step(ll,vPosition.x) * alphaTest);
 
-   col = mix(mixA,mixB,xy.x);
+   col = mix(mixA,mixB,step(ll*0.33,vPosition.x) * alphaTest);
    
 
-      float ll = length(xy);
-      gl_FragColor = vec4(  col  * 10.0 , step(ll, 0.5 ) * alphaTest) * t1;
 
-    vec4 colors =  vec4(abs(sin(vPosition * 1.5)),1.) * t1;
-    
-    gl_FragColor =colors;
-    //  gl_FragColor = vec4(vPosition,1.);
+    gl_FragColor = vec4(col,0.5 *alphaTest) * t1;
+   
     
 
     
