@@ -5,7 +5,24 @@ canvas {
   top: 0;
 }
 html::-webkit-scrollbar {
-  display: none;
+  /* display: none; */
+}
+html {
+  /* overflow: hidden; */
+}
+html,
+body {
+  height: 100%;
+}
+.smooth-scroll {
+  /* overflow-y: hidden !important;  */
+}
+
+.wrap {
+  width: 100%;
+
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 section {
   height: 100vh;

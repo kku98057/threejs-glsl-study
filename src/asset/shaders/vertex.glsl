@@ -47,13 +47,9 @@ void main() {
     
 
     morphed += ( morphTarget0 - vPosition ) * u_morphTargetInfluences[ 0 ];
-      
     morphed += ( morphTarget1 - vPosition ) * u_morphTargetInfluences[ 1 ];
-    
     morphed += ( morphTarget2 - vPosition ) * u_morphTargetInfluences[ 2 ];
-    
     morphed += ( morphTarget3 - vPosition ) * u_morphTargetInfluences[ 3 ];
-
     morphed += ( morphTarget4 - vPosition ) * u_morphTargetInfluences[ 4 ];
 
     
@@ -61,10 +57,6 @@ void main() {
     
     morphed += vPosition ;
   
-
-
-
-
 
 
     vec4 mvPosition = modelViewMatrix * vec4( morphed , 1.);
