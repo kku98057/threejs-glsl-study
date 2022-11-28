@@ -35,7 +35,7 @@ void main() {
     float time = u_time *speed;
     vec3 transformed = vec3(position);
 
-    float size = u_size;
+    float size = 10. + (u_size * aRandom.x) ;
 
   vec3 v_morphTarget1 = morphTarget1;
 
@@ -52,9 +52,6 @@ void main() {
     morphed += ( morphTarget3 - vPosition ) * u_morphTargetInfluences[ 3 ];
     morphed += ( morphTarget4 - vPosition ) * u_morphTargetInfluences[ 4 ];
 
-    
-    
-    
     morphed += vPosition ;
   
 

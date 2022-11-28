@@ -7,17 +7,57 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { MeshSurfaceSampler } from "three/examples/jsm/math/MeshSurfaceSampler";
 
 import earth from "../3DTexture/earth.glb";
 import land from "../3DTexture/land.glb";
 import rocket from "../3DTexture/rocket.glb";
 import logo from "../3DTexture/logo.glb";
+import character from "../3DTexture/character.glb";
 import t1Texture from "../img/circle.png";
-import gsap, { snap } from "gsap";
+import gsap from "gsap";
+
 import { ScrollTrigger } from "gsap/all";
 import * as dat from "dat.gui";
 
 // import fragment from "./fragment.glsl"
+const tempPosition = new THREE.Vector3();
+class Path {
+  constructor(geometry, material, sampler, index) {
+    this.vertices = [];
+    this.geometry = geometry;
+    this.material = material[index % 4];
+    this.sampler = sampler;
+    this.line = new THREE.Line(this.geometry, this.material);
+    sampler.sample(tempPosition);
+    this.previousPoint = tempPosition.clone();
+    console.log(this.line);
+  }
+  update() {
+    /* Variable used to exit the while loop when we find a point */
+    let pointFound = false;
+    /* Loop while we haven't found a point */
+    while (!pointFound) {
+      /* Sample a random point */
+      this.sampler.sample(tempPosition);
+      /* If the new point is less 30 units from the previous point */
+      if (tempPosition.distanceTo(this.previousPoint) < 0.5) {
+        /* Add the new point in the vertices array */
+        this.vertices.push(tempPosition.x, tempPosition.y, tempPosition.z);
+        /* Store the new point vector */
+        this.previousPoint = tempPosition.clone();
+        /* Exit the loop */
+        pointFound = true;
+      }
+    }
+    /* Update the geometry */
+    this.geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(this.vertices, 3)
+    );
+  }
+}
+
 export default class App {
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
@@ -119,221 +159,91 @@ export default class App {
     this.gui.add(this.light.position, "z", -10, 10, 0.01);
   }
   async addMesh() {
-    this.manager = new THREE.LoadingManager();
-    this.loader = new GLTFLoader(this.manager);
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: vertex,
+      fragmentShader: fragment,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+
+      extensions: {
+        derivatives: "#extension GL_OES_standard_derivatives : enable",
+      },
+      side: THREE.DoubleSide,
+      uniforms: {
+        u_time: { type: "f", value: 1 },
+        u_size: { type: "f", value: 10 },
+        u_morphTargetInfluences: {
+          type: "f",
+          value: [0, 0, 0, 0, 0],
+        },
+        u_resolution: { type: "v2", value: new THREE.Vector2() },
+        alphaTest: { value: 1 },
+        t: {
+          type: "f",
+          value: new THREE.TextureLoader().load(t1Texture),
+        },
+
+        u_slide: { type: "f", value: 0 },
+        u_color1: { type: "v3", value: new THREE.Color("#006dff") },
+        u_color2: { type: "v3", value: new THREE.Color("#fc0001") },
+        u_color3: { type: "v3", value: new THREE.Color("#f2e300") },
+      },
+    });
+    this.material.uniformsNeedUpdate = true;
+    this.material = [
+      new THREE.LineBasicMaterial({
+        color: 0xfaad80,
+        transparent: true,
+        opacity: 0.5,
+      }),
+      new THREE.LineBasicMaterial({
+        color: 0xff6767,
+        transparent: true,
+        opacity: 0.5,
+      }),
+      new THREE.LineBasicMaterial({
+        color: 0xff3d68,
+        transparent: true,
+        opacity: 0.5,
+      }),
+      new THREE.LineBasicMaterial({
+        color: 0xa73489,
+        transparent: true,
+        opacity: 0.5,
+      }),
+    ];
+
+    this.geometry = new THREE.BufferGeometry();
     this.draco = new DRACOLoader();
+    this.loader = new GLTFLoader();
     this.draco.setDecoderPath(
       "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/js/libs/draco/"
     );
-    this.loader.setDRACOLoader(this.draco);
+
     this.modelData = [
       {
-        src: earth,
-        vertices: [],
-        colors: [],
-      },
-      {
-        src: rocket,
-        vertices: [],
-        colors: [],
-      },
-      {
-        src: land,
-        vertices: [],
-        colors: [],
+        vertice: [],
+        paths: [],
       },
     ];
-    this.geometry = new THREE.BufferGeometry();
-    await this.delay(0);
-    this.loader.load(this.modelData[0].src, (gltf) => {
-      this.objs = [];
+    this.group = new THREE.Group();
+    this.loader.setDRACOLoader(this.draco);
+    this.loader.load(rocket, (gltf) => {
       gltf.scene.traverse((obj) => {
         if (obj.isMesh) {
-          this.objs.push(obj);
-        }
-        this.objs.forEach((model) => {
-          this.position = model.geometry.attributes.position;
-          this.positionArray = this.position.array;
-          this.modelData[0].vertices = this.positionArray;
-          this.colors = new Float32Array(this.positionArray);
-          this.color = new THREE.Color();
-          for (let i = 0; i < this.position.count; i += 3) {
-            this.x =
-              (Math.random() * this.position.count) / (this.position.count / 2);
-            this.y =
-              (Math.random() * this.position.count) / (this.position.count / 2);
-            this.z =
-              (Math.random() * this.position.count) / (this.position.count / 2);
-            this.color.setRGB(this.x, this.y, this.z);
-            this.modelData[0].colors.push(
-              this.color.r,
-              this.color.g,
-              this.color.b
-            );
+          this.sampler = new MeshSurfaceSampler(obj).build();
+          for (let i = 0; i < 4; i++) {
+            this.path = new Path(this.geometry, this.material, this.sampler, i);
+            this.modelData[0].paths.push(this.path);
+            this.group.add(this.path.line);
           }
-        });
-      });
-    });
-    this.loader.load(this.modelData[1].src, (gltf) => {
-      this.objs = [];
-      gltf.scene.traverse((obj) => {
-        if (obj.isMesh) {
-          this.objs.push(obj);
         }
-        this.objs.forEach((model) => {
-          this.position = model.geometry.attributes.position;
-          this.positionArray = this.position.array;
-          this.modelData[1].vertices = this.position.array;
-        });
-      });
-    });
-    this.loader.load(this.modelData[2].src, (gltf) => {
-      this.objs = [];
-      gltf.scene.traverse((obj) => {
-        if (obj.isMesh) {
-          this.objs.push(obj);
-        }
-        this.objs.forEach((model) => {
-          this.position = model.geometry.attributes.position;
-          this.positionArray = this.position.array;
+      }); //traverse
 
-          this.modelData[2].vertices = this.position.array;
-        });
-      });
-    });
-
-    await this.delay(1000);
-    this.geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
-    );
-    this.geometry.setAttribute(
-      "color",
-      new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
-    );
-
-    this.geometry.morphAttributes.position = [];
-    this.geometry.morphAttributes.color = [];
-
-    this.geometry.morphAttributes.position[0] =
-      new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3);
-
-    this.geometry.morphAttributes.color[0] = new THREE.Float32BufferAttribute(
-      this.modelData[0].vertices,
-      3
-    );
-
-    this.geometry.morphAttributes.position[1] =
-      new THREE.Float32BufferAttribute(this.modelData[1].vertices, 3);
-
-    this.geometry.morphAttributes.color[1] = new THREE.Float32BufferAttribute(
-      this.modelData[1].vertices,
-      3
-    );
-
-    this.geometry.morphAttributes.position[2] =
-      new THREE.Float32BufferAttribute(this.modelData[2].vertices, 3);
-
-    this.geometry.morphAttributes.color[2] = new THREE.Float32BufferAttribute(
-      this.modelData[2].vertices,
-      3
-    );
-
-    // this.material = new THREE.ShaderMaterial({
-    //   vertexShader: vertex,
-
-    //   fragmentShader: fragment,
-    //   blending: THREE.AdditiveBlending,
-    //   transparent: true,
-    //   depthTest: false,
-    //   depthWrite: true,
-    //   uniforms: {
-    //     u_time: { type: "f", value: 1 },
-    //     u_resolution: { type: "v2", value: new THREE.Vector2() },
-    //     u_opacity: { type: "v2", value: 0.5 },
-    //     t: { type: "f", value: new THREE.TextureLoader().load(t1Texture) },
-    //     u_color1: { type: "v3", value: new THREE.Color("#006dff") },
-    //     u_color2: { type: "v3", value: new THREE.Color("#fc0001") },
-    //     u_color3: { type: "v3", value: new THREE.Color("#f2e300") },
-    //   },
-    // });
-    this.material = new THREE.PointsMaterial({
-      size: 0.01 + Math.random() * 0.005,
-      transparent: true,
-      vertexColors: true,
-      blending: THREE.AdditiveBlending,
-      depthTest: false,
-      transparent: true,
-      map: new THREE.TextureLoader().load("./asset/img/circle.png"),
-    });
-    console.log(this.material);
-    this.mesh = new THREE.Points(this.geometry, this.material);
-    this.scene.add(this.mesh);
-
-    await this.delay(100);
-    const tl = gsap.timeline();
-    tl.to(this.camera.position, {
-      x: 0,
-      z: 3,
-      duration: 3,
-    }).to(
-      this.mesh.rotation,
-      {
-        y: Math.PI,
-        duration: 3,
-      },
-      ">-=3"
-    );
-    const tl2 = gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: ".section2",
-          pin: true,
-          end: "+=3000",
-          scrub: 3,
-          markers: true,
-        },
-      })
-
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 1, 0]);
-
-    const tl3 = gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: ".section3",
-          pin: true,
-          end: "+=3000",
-          scrub: 3,
-          markers: true,
-        },
-      })
-      .to(this.mesh.rotation, {
-        y: Math.PI * 2,
-      })
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 0.5, 0.5], ">-=0.5")
-      .to(this.mesh.morphTargetInfluences, 0.5, [0, 0, 1])
-      .to(
-        this.mesh.rotation,
-        {
-          y: Math.PI * 3,
-          z: Math.PI * 0.5,
-        },
-        ">-=0.4"
-      )
-      .to(this.mesh.rotation, {
-        y: Math.PI * 4,
-        z: 0,
-      })
-      .to(
-        {},
-        {
-          duration: 0.5,
-        }
-      );
-
-    // window.addEventListener("scroll", () => {
-    //   console.log(this.mesh.morphTargetInfluences);
-    // });
+      this.scene.add(this.group);
+    }); //loader
   }
 
   setResize() {
@@ -359,6 +269,14 @@ export default class App {
   render() {
     // this.renderer.render(this.scene, this.camera);
     this.update();
+    this.modelData[0].paths.forEach((path) => {
+      if (this.path) {
+        if (this.path.vertices.length < 15000) {
+          this.path.update();
+        }
+      }
+    });
+
     this.composer.render();
     requestAnimationFrame(this.render.bind(this));
   }

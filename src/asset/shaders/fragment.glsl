@@ -41,7 +41,8 @@ void main(){
    
    
   vec4 color = vec4(col,0.5 *alphaTest) * t1;
-  
+  // if(color.r == 0. || color.g == 0. || color.b == 0.) discard;
+  // if(color.a < 0.1) discard;
     gl_FragColor = color;
    
 }

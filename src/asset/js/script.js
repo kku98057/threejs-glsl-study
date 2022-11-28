@@ -9,7 +9,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { MeshSurfaceSampler } from "three/examples/jsm/math/MeshSurfaceSampler";
 
-import earth from "../3DTexture/earth.glb";
+import earth from "../3DTexture/dna.glb";
 import land from "../3DTexture/land.glb";
 import rocket from "../3DTexture/rocket.glb";
 import logo from "../3DTexture/logo.glb";
@@ -19,7 +19,7 @@ import gsap from "gsap";
 
 import { ScrollTrigger } from "gsap/all";
 import * as dat from "dat.gui";
-// import LocomotiveScroll from "locomotive-scroll";
+import LocomotiveScroll from "locomotive-scroll";
 
 // import fragment from "./fragment.glsl"
 export default class App {
@@ -121,12 +121,12 @@ export default class App {
     // this.cc.add(this.camera.position, "y", 0, 100, 0.1);
     // this.cc.add(this.camera.position, "z", 0, 100, 0.1);
 
-    this.pp = this.gui.addFolder("postprocessing");
-    this.pp.open();
-    this.pp.add(this.bloomPass, "threshold", 0, 5, 0.01);
-    this.pp.add(this.bloomPass, "strength", 0, 5, 0.01);
-    this.pp.add(this.bloomPass, "radius", 0, 5, 0.01);
-    this.pp.add(this.bloomPass, "exposure", 0, 5, 0.01);
+    // this.pp = this.gui.addFolder("postprocessing");
+    // this.pp.open();
+    // this.pp.add(this.bloomPass, "threshold", 0, 5, 0.01);
+    // this.pp.add(this.bloomPass, "strength", 0, 5, 0.01);
+    // this.pp.add(this.bloomPass, "radius", 0, 5, 0.01);
+    // this.pp.add(this.bloomPass, "exposure", 0, 5, 0.01);
 
     // this.md = this.gui.addFolder("model");
     // this.md.open();
@@ -211,6 +211,8 @@ export default class App {
     await this.delay(100);
 
     this.geometry = new THREE.BufferGeometry();
+    this.geo = new THREE.BufferGeometry();
+
     this.loader1.load(this.modelData[0].src, (earth) => {
       this.loader2.load(this.modelData[1].src, (land) => {
         this.loader3.load(this.modelData[2].src, (rocket) => {
@@ -263,7 +265,7 @@ export default class App {
                   );
 
                   // 샘플러 위치 저장 및 난수*위치값 , 배경생성
-                  for (let i = 0; i < this.positionsArray.length / 2; i++) {
+                  for (let i = 0; i < this.positionsArray.length / 4; i++) {
                     sampler.sample(this.temPosition);
 
                     this.modelData[0].vertices.push(
@@ -321,7 +323,7 @@ export default class App {
                   );
 
                   // 샘플러 위치 저장 및 난수*위치값 , 배경생성
-                  for (let i = 0; i < this.positionsArray.length; i++) {
+                  for (let i = 0; i < this.positionsArray.length / 2; i++) {
                     sampler.sample(this.temPosition);
 
                     this.modelData[2].vertices.push(
@@ -427,6 +429,8 @@ export default class App {
                 "position",
                 new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
               );
+              this.geometry.morphTargetsRelative = true;
+
               this.geometry.setAttribute(
                 "morphTarget0",
                 new THREE.Float32BufferAttribute(this.modelData[0].vertices, 3)
@@ -448,6 +452,26 @@ export default class App {
                 new THREE.Float32BufferAttribute(this.modelData[4].vertices, 3)
               );
 
+              this.geometry.setAttribute(
+                "morphNormal0",
+                new THREE.Float32BufferAttribute(this.modelData[0].normal, 3)
+              );
+              this.geometry.setAttribute(
+                "morphNormal1",
+                new THREE.Float32BufferAttribute(this.modelData[1].normal, 3)
+              );
+              this.geometry.setAttribute(
+                "morphNormal2",
+                new THREE.Float32BufferAttribute(this.modelData[2].normal, 3)
+              );
+              this.geometry.setAttribute(
+                "morphNormal3",
+                new THREE.Float32BufferAttribute(this.modelData[3].normal, 3)
+              );
+              this.geometry.setAttribute(
+                "morphNormal4",
+                new THREE.Float32BufferAttribute(this.modelData[4].normal, 3)
+              );
               this.mesh = new THREE.Points(this.geometry, this.material);
 
               this.scene.add(this.mesh);
@@ -457,97 +481,49 @@ export default class App {
               // this.gui.add(this.mesh.scale, "z", 0.001, 5, 0.001);
               // --- SETUP START ---
               // Using Locomotive Scroll from Locomotive https://github.com/locomotivemtl/locomotive-scroll
-              // const locoScroll = new LocomotiveScroll({
-              //   el: document.querySelector(".smooth-scroll"),
-              //   smooth: true,
-              //   lerp: 0.05,
-              //   multiplier: 0.6,
-              //   tablet: { smooth: true },
-              //   smartphone: { smooth: true },
-              // });
-              // // each time Locomotive Scroll updates, tell ScrollTrigger to update too (sync positioning)
-              // locoScroll.on("scroll", ScrollTrigger.update);
+              const locoScroll = new LocomotiveScroll({
+                el: document.querySelector(".smooth-scroll"),
+                smooth: true,
+                lerp: 0.05,
+                multiplier: 0.6,
+                tablet: { smooth: true },
+                smartphone: { smooth: true },
+              });
+              // each time Locomotive Scroll updates, tell ScrollTrigger to update too (sync positioning)
+              locoScroll.on("scroll", ScrollTrigger.update);
 
-              // // tell ScrollTrigger to use these proxy methods for the ".smooth-scroll" element since Locomotive Scroll is hijacking things
-              // ScrollTrigger.scrollerProxy(".smooth-scroll", {
-              //   scrollTop(value) {
-              //     return arguments.length
-              //       ? locoScroll.scrollTo(value, {
-              //           duration: 0,
-              //           disableLerp: true,
-              //         })
-              //       : locoScroll.scroll.instance.scroll.y;
-              //   }, // we don't have to define a scrollLeft because we're only scrolling vertically.
-              //   getBoundingClientRect() {
-              //     return {
-              //       top: 0,
-              //       left: 0,
-              //       width: window.innerWidth,
-              //       height: window.innerHeight,
-              //     };
-              //   },
-              //   // LocomotiveScroll handles things completely differently on mobile devices - it doesn't even transform the container at all! So to get the correct behavior and avoid jitters, we should pin things with position: fixed on mobile. We sense it by checking to see if there's a transform applied to the container (the LocomotiveScroll-controlled element).
-              //   pinType: document.querySelector(".smooth-scroll").style
-              //     .transform
-              //     ? "transform"
-              //     : "fixed",
-              // });
+              // tell ScrollTrigger to use these proxy methods for the ".smooth-scroll" element since Locomotive Scroll is hijacking things
+              ScrollTrigger.scrollerProxy(".smooth-scroll", {
+                scrollTop(value) {
+                  return arguments.length
+                    ? locoScroll.scrollTo(value, {
+                        duration: 0,
+                        disableLerp: true,
+                      })
+                    : locoScroll.scroll.instance.scroll.y;
+                }, // we don't have to define a scrollLeft because we're only scrolling vertically.
+                getBoundingClientRect() {
+                  return {
+                    top: 0,
+                    left: 0,
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                  };
+                },
+                // LocomotiveScroll handles things completely differently on mobile devices - it doesn't even transform the container at all! So to get the correct behavior and avoid jitters, we should pin things with position: fixed on mobile. We sense it by checking to see if there's a transform applied to the container (the LocomotiveScroll-controlled element).
+                pinType: document.querySelector(".smooth-scroll").style
+                  .transform
+                  ? "transform"
+                  : "fixed",
+              });
 
-              // // each time the window updates, we should refresh ScrollTrigger and then update LocomotiveScroll.
-              // ScrollTrigger.addEventListener("refresh", () =>
-              //   locoScroll.update()
-              // );
-              // ScrollTrigger.defaults({ scroller: ".smooth-scroll" });
+              // each time the window updates, we should refresh ScrollTrigger and then update LocomotiveScroll.
+              ScrollTrigger.addEventListener("refresh", () =>
+                locoScroll.update()
+              );
+              ScrollTrigger.defaults({ scroller: ".smooth-scroll" });
 
               // --- SETUP END ---
-
-              // const tl = gsap.timeline({
-              //   scrollTrigger: {
-              //     trigger: ".scroll1",
-              //     // start: "0% 75%",
-              //     // end: "100% 25%",
-              //     scrub: 1,
-              // scroller: ".smooth-scroll";
-              //     // pin: true,
-              //     // end: `+=${window.innerHeight}`,
-              //     onUpdate: (slef) => {
-              //       console.log(slef);
-              //     },
-              //     // markers: true,
-              //   },
-              //   defaults: { duration: 1, ease: "none" },
-              // });
-              // // tl.to(this.material.uniforms.u_morphTargetInfluences.value, [
-              // //   (1, 0, 0, 0, 0),
-              // // ]);
-              // tl.to(
-              //   this.camera.position,
-              //   {
-              //     z: 3,
-              //   },
-              //   ">-0.5"
-              // );
-              // tl.to(
-              //   this.mesh.rotation,
-              //   {
-              //     y: Math.PI,
-              //   },
-              //   ">-0.5"
-              // );
-              // tl.from(".s1_wrap h2", {
-              //   yPercent: 100,
-              //   skewY: 25,
-              //   transformOrigin: "0 50%",
-              // });
-              // tl.from(
-              //   ".s1_wrap p",
-              //   {
-              //     yPercent: 100,
-              //     skewY: 25,
-              //     transformOrigin: "0 50%",
-              //   },
-              //   ">-1"
-              // );
 
               const tl2 = gsap.timeline({
                 scrollTrigger: {
@@ -563,6 +539,7 @@ export default class App {
                 },
                 defaults: { duration: 1, ease: "none" },
               });
+
               tl2.to(".s1_wrap h2", {
                 yPercent: -100,
                 skewY: -15,
@@ -577,6 +554,7 @@ export default class App {
                 },
                 ">-1"
               );
+
               tl2.from(".s2_wrap h2", {
                 yPercent: 100,
                 skewY: 25,
@@ -594,7 +572,7 @@ export default class App {
               tl2.to(
                 this.camera.position,
                 {
-                  z: 1,
+                  z: 0,
                 },
                 ">-1"
               );
@@ -606,9 +584,7 @@ export default class App {
                 ">-0.5"
               );
               tl2.to(this.mesh.rotation, { y: Math.PI }, ">-0.5");
-              // tl2.to(this.bloomPass, {
-              //   strength: 1,
-              // });
+
               tl2.to(
                 this.camera.position,
                 {
@@ -616,12 +592,15 @@ export default class App {
                 },
                 ">-0.5"
               );
-
-              tl2.to(".s2_wrap h2", {
-                yPercent: -100,
-                skewY: -15,
-                transformOrigin: "0 50%",
-              });
+              tl2.to(
+                ".s2_wrap h2",
+                {
+                  yPercent: -100,
+                  skewY: -15,
+                  transformOrigin: "0 50%",
+                },
+                ">-0.5"
+              );
               tl2.to(
                 ".s2_wrap p",
                 {
@@ -639,6 +618,21 @@ export default class App {
                 },
                 defaults: { duration: 1, ease: "none" },
               });
+              tl3.from(".s3_wrap h2", {
+                yPercent: 100,
+                skewY: 25,
+                transformOrigin: "0 50%",
+              });
+              tl3.from(
+                ".s3_wrap p",
+                {
+                  yPercent: 100,
+                  skewY: 25,
+                  transformOrigin: "0 50%",
+                },
+                ">-1"
+              );
+
               tl3.to(this.mesh.rotation, {
                 y: Math.PI * 2,
               });
@@ -650,24 +644,6 @@ export default class App {
                 ">-1"
               );
 
-              tl3.from(
-                ".s3_wrap h2",
-                {
-                  yPercent: 100,
-                  skewY: 25,
-                  transformOrigin: "0 50%",
-                },
-                ">-1"
-              );
-              tl3.from(
-                ".s3_wrap p",
-                {
-                  yPercent: 100,
-                  skewY: 25,
-                  transformOrigin: "0 50%",
-                },
-                ">-1"
-              );
               tl3.to(".s3_wrap h2", {
                 delay: 0.5,
                 yPercent: -100,
@@ -684,21 +660,17 @@ export default class App {
                 },
                 ">-1"
               );
-              tl3.to(
-                this.mesh.position,
-                {
-                  x: -10,
-                  y: 10,
-                },
-                ">-1.7"
-              );
-              tl3.to(
-                this.mesh.rotation,
-                {
-                  z: 0,
-                },
-                ">-0.5"
-              );
+
+              tl3.to(this.mesh.position, {
+                x: -10,
+                y: 10,
+              });
+              tl3.to(this.mesh.rotation, {
+                z: 0,
+              });
+              tl3.to(this.camera.position, {
+                z: 4,
+              });
               tl3.to(
                 this.mesh.position,
                 {
@@ -707,29 +679,19 @@ export default class App {
                 },
                 ">-0.5"
               );
-              tl3.to(
-                this.camera.position,
-                {
-                  z: 4,
-                },
-                ">-1"
-              );
 
               const tl4 = gsap.timeline({
                 scrollTrigger: {
                   trigger: ".scroll4",
-                  // start: "0% 75%",
-                  // end: "100% 25%",
+
                   scrub: 1,
-
-                  // pin: true,
-                  // end: `+=${window.innerHeight}`,
-
-                  // markers: true,
                 },
                 defaults: { duration: 1, ease: "none" },
               });
-
+              tl4.to(this.mesh.position, {
+                x: 0,
+                y: 0,
+              });
               tl4.from(".s4_wrap h2", {
                 yPercent: 100,
                 skewY: 25,
@@ -743,6 +705,17 @@ export default class App {
                   transformOrigin: "0 50%",
                 },
                 ">-1"
+              );
+
+              tl4.to(this.camera.position, {
+                z: 6,
+              });
+              tl4.to(
+                this.mesh.rotation,
+                {
+                  y: Math.PI * 3,
+                },
+                ">-0.5"
               );
               tl4.to(".s4_wrap h2", {
                 delay: 0.5,
@@ -760,41 +733,17 @@ export default class App {
                 },
                 ">-1"
               );
-              tl4.to(this.camera.position, {
-                z: 6,
-              });
-              tl4.to(
-                this.mesh.rotation,
-                {
-                  y: Math.PI * 3,
-                },
-                ">-0.5"
-              );
-              tl4.to(
-                this.mesh.position,
-                {
-                  x: 0,
-                },
-                ">-0.5"
-              );
+
               const tl5 = gsap.timeline({
                 scrollTrigger: {
                   trigger: ".scroll5",
-                  // start: "0% 75%",
-                  // end: "100% 25%",
                   scrub: 1,
-
-                  // pin: true,
-                  // end: `+=${window.innerHeight}`,
-
-                  // markers: true,
                 },
                 defaults: { duration: 1, ease: "none" },
               });
-              // tl5.to(
-              //   this.material.uniforms.u_morphTargetInfluences.value,
-              //   [0, 0, 0, 0, 1]
-              // );
+              tl5.to(this.mesh.position, {
+                x: 0,
+              });
               tl5.from(".s5_wrap h2", {
                 yPercent: 100,
                 skewY: 25,
@@ -809,10 +758,16 @@ export default class App {
                 },
                 ">-1"
               );
-              tl5.to(".s5_wrap h2", {});
+              tl5.from(
+                {},
+                {
+                  duration: 2,
+                }
+              );
+
               const tl6 = gsap.timeline({
                 scrollTrigger: {
-                  trigger: "main",
+                  trigger: ".scrollContainer",
                   // start: "0% 75%",
                   // end: "100% 25%",
                   scrub: 1,
@@ -843,26 +798,16 @@ export default class App {
                 this.material.uniforms.u_morphTargetInfluences.value,
                 [0, 0, 0, 0, 1]
               );
-              // scroll.on("scroll", (args) => {
-              //   // Get all current elements : args.currentElements
-              //   if (typeof args.currentElements["hey"] === "object") {
-              //     let progress = args.currentElements["hey"].progress;
-              //     console.log(progress);
-              //     // ouput log example: 0.34
-              //     // gsap example : myGsapAnimation.progress(progress);
-              //   }
-              // });
-              window.addEventListener("scroll", () => {
-                console.log(
-                  this.material.uniforms.u_morphTargetInfluences.value
-                );
-              });
             }); // last load
           });
         });
       });
     });
-    window.addEventListener("scroll", (e) => {});
+    const scrollSections = document.querySelector(".scrollContainer");
+
+    scrollSections.addEventListener("scroll", () => {
+      ScrollTrigger.update();
+    });
   }
 
   setResize() {
@@ -873,7 +818,6 @@ export default class App {
     this.composer.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.height = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty("--vh", `${vh}px`);
 
     this.camera.position.set(0, 0, window.innerWidth <= 1440 ? 6 : 4);
     ScrollTrigger.refresh();
@@ -884,9 +828,9 @@ export default class App {
     this.delta = this.clock.getDelta();
 
     if (this.mesh) {
-      this.mesh.rotation.y -= this.delta * 0.1;
+      // this.mesh.rotation.y -= this.delta * 0.1;
 
-      this.backmesh.rotation.y += this.delta * 0.1;
+      // this.backmesh.rotation.y += this.delta * 0.1;
       this.material.uniforms.u_time.value += Math.sin(0.3);
     }
   }
